@@ -105,6 +105,16 @@ header .subtitle {
   font-size: 13px;
 }
 
+.version-tag {
+  font-size: 11px;
+  color: var(--text-dim);
+  background: var(--surface2);
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-family: monospace;
+  flex-shrink: 0;
+}
+
 .page-content { padding: 24px 0; }
 
 /* Cards */

@@ -196,6 +196,8 @@ export default {
       enabled: 'Active',
       disabled: 'Disabled',
       productions: 'Productions',
+      inventory: 'Inventory',
+      costsToClaim: 'Costs to claim',
       categories: {
         greenhouse:    '🌿 Greenhouse',
         bakery:        '🥐 Bakery',

@@ -125,6 +125,20 @@ def parse_production(save_path: Path) -> dict:
         if total_count == 0:
             continue
 
+        production_costs = float(pp.get("productionCostsToClaim", 0))
+
+        storage = []
+        storage_el = pp.find("storage")
+        if storage_el is not None:
+            for node in storage_el.findall("node"):
+                fill_type = node.get("fillType", "")
+                fill_level = float(node.get("fillLevel", 0))
+                if fill_level >= 1:
+                    storage.append({
+                        "type": fill_type,
+                        "level": round(fill_level, 1),
+                    })
+
         # Update summary
         summary[category] = summary.get(category, 0) + enabled_count
 
@@ -138,6 +152,8 @@ def parse_production(save_path: Path) -> dict:
             "productions": productions,
             "enabledCount": enabled_count,
             "totalCount": total_count,
+            "productionCostsToClaim": round(production_costs, 2),
+            "storage": storage,
         })
 
     facilities.sort(key=lambda f: (f["category"], f["name"]))
