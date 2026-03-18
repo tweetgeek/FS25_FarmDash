@@ -14,9 +14,53 @@ from api.parsers.storages import parse_storages
 router = APIRouter()
 
 
+def _is_savegame_dir(name: str) -> bool:
+    """Matches savegame1, savegame2, ... but not savegameBackup etc."""
+    prefix = "savegame"
+    return name.startswith(prefix) and name[len(prefix):].isdigit() and len(name) > len(prefix)
+
+
 @router.get("/config")
 def get_config():
     return read_config()
+
+
+@router.get("/detect-saves-path")
+def detect_saves_path():
+    home = Path.home()
+    candidates = [
+        home / "Documents" / "My Games" / "FarmingSimulator2025",
+        home / "OneDrive" / "Documents" / "My Games" / "FarmingSimulator2025",
+        home / "Moje dokumenty" / "My Games" / "FarmingSimulator2025",
+    ]
+    for path in candidates:
+        if path.exists() and any(_is_savegame_dir(p.name) for p in path.iterdir() if p.is_dir()):
+            return {"path": str(path)}
+    # Return first existing directory even without savegames yet
+    for path in candidates:
+        if path.exists():
+            return {"path": str(path)}
+    return {"path": None}
+
+
+@router.get("/browse-folder")
+def browse_folder():
+    try:
+        import tkinter as tk
+        from tkinter import filedialog
+        root = tk.Tk()
+        root.withdraw()
+        root.wm_attributes("-topmost", True)
+        path = filedialog.askdirectory(
+            parent=root,
+            title="Wybierz katalog z zapisami FS25",
+        )
+        root.destroy()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Nie można otworzyć okna wyboru folderu: {e}")
+    if not path:
+        return {"path": None}
+    return {"path": path}
 
 
 @router.post("/config")
@@ -34,7 +78,7 @@ def list_saves():
 
     saves = []
     for item in sorted(saves_dir.iterdir()):
-        if item.is_dir() and item.name.startswith("savegame"):
+        if item.is_dir() and _is_savegame_dir(item.name):
             career_file = item / "careerSavegame.xml"
             farms_file = item / "farms.xml"
 
