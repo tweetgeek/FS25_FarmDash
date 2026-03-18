@@ -4,17 +4,37 @@
     <div v-else-if="error" class="alert alert-error">{{ error }}</div>
     <div v-else-if="data">
 
-      <!-- Current period info -->
       <div class="alert alert-info" style="margin-bottom:16px">
         📅 Aktualny okres: <strong>{{ data.currentPeriodLabel }}</strong>
+        &nbsp;·&nbsp; {{ filteredItems.length }} pozycji
       </div>
 
-      <!-- Crop selector + chart -->
+      <!-- Category filter -->
+      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px;">
+        <button
+          :class="['tab-btn', { active: activeCategory === null }]"
+          style="font-size:12px; padding:5px 12px;"
+          @click="setCategory(null)"
+        >
+          🌍 Wszystkie ({{ data.items.length }})
+        </button>
+        <button
+          v-for="[key, [label, emoji]] in presentCategories"
+          :key="key"
+          :class="['tab-btn', { active: activeCategory === key }]"
+          style="font-size:12px; padding:5px 12px;"
+          @click="setCategory(key)"
+        >
+          {{ emoji }} {{ label }} ({{ countByCategory(key) }})
+        </button>
+      </div>
+
+      <!-- Chart -->
       <div class="card">
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px">
           <h2 style="margin-bottom:0">📈 Wykres cen sezonowych</h2>
-          <select v-model="selectedCrop" class="crop-select">
-            <option v-for="c in data.crops" :key="c.type" :value="c.type">
+          <select v-model="selectedItem" class="crop-select">
+            <option v-for="c in filteredItems" :key="c.type" :value="c.type">
               {{ c.emoji }} {{ c.name }}
             </option>
           </select>
@@ -29,21 +49,21 @@
         <table class="fields-table">
           <thead>
             <tr>
-              <th>Surowiec</th>
-              <th>Aktualnie</th>
-              <th>Następny okres</th>
-              <th>Min</th>
-              <th>Max (kiedy)</th>
+              <th class="sortable" @click="toggleSort('name')">Produkt {{ sortIcon('name') }}</th>
+              <th class="sortable" @click="toggleSort('currentPrice')">Aktualnie {{ sortIcon('currentPrice') }}</th>
+              <th class="sortable" @click="toggleSort('nextPrice')">Następny okres {{ sortIcon('nextPrice') }}</th>
+              <th class="sortable" @click="toggleSort('minPrice')">Min {{ sortIcon('minPrice') }}</th>
+              <th class="sortable" @click="toggleSort('maxPrice')">Max (kiedy) {{ sortIcon('maxPrice') }}</th>
               <th>Trend</th>
             </tr>
           </thead>
           <tbody>
             <tr
-              v-for="c in data.crops"
+              v-for="c in filteredItems"
               :key="c.type"
-              :style="c.type === selectedCrop ? 'background:var(--surface2)' : ''"
+              :style="c.type === selectedItem ? 'background:var(--surface2)' : ''"
               style="cursor:pointer"
-              @click="selectedCrop = c.type"
+              @click="selectedItem = c.type"
             >
               <td><strong>{{ c.emoji }} {{ c.name }}</strong></td>
               <td>
@@ -82,12 +102,69 @@ const props = defineProps({
 })
 
 const chartCanvas = ref(null)
-const selectedCrop = ref(null)
+const selectedItem = ref(null)
+const activeCategory = ref(null)
 let chartInstance = null
 
-const currentCropData = computed(() => {
-  if (!props.data || !selectedCrop.value) return null
-  return props.data.crops.find(c => c.type === selectedCrop.value)
+const allItems = computed(() => props.data?.items || [])
+
+const presentCategories = computed(() => {
+  if (!props.data?.categories) return []
+  const present = new Set(allItems.value.map(i => i.category))
+  return Object.entries(props.data.categories).filter(([key]) => present.has(key))
+})
+
+function countByCategory(key) {
+  return allItems.value.filter(i => i.category === key).length
+}
+
+const sortCol = ref('currentPrice')
+const sortDir = ref(-1) // -1 = desc, 1 = asc
+
+const SORT_KEYS = {
+  name:         i => i.name.toLowerCase(),
+  currentPrice: i => i.currentPrice,
+  nextPrice:    i => i.nextPrice,
+  minPrice:     i => i.minPrice,
+  maxPrice:     i => i.maxPrice,
+}
+
+function toggleSort(col) {
+  if (sortCol.value === col) {
+    sortDir.value *= -1
+  } else {
+    sortCol.value = col
+    sortDir.value = col === 'name' ? 1 : -1
+  }
+}
+
+function sortIcon(col) {
+  if (sortCol.value !== col) return '↕'
+  return sortDir.value === 1 ? '↑' : '↓'
+}
+
+const filteredItems = computed(() => {
+  const base = activeCategory.value
+    ? allItems.value.filter(i => i.category === activeCategory.value)
+    : allItems.value
+  const keyFn = SORT_KEYS[sortCol.value] ?? SORT_KEYS.currentPrice
+  return [...base].sort((a, b) => {
+    const av = keyFn(a), bv = keyFn(b)
+    return av < bv ? -sortDir.value : av > bv ? sortDir.value : 0
+  })
+})
+
+function setCategory(key) {
+  activeCategory.value = key
+  if (filteredItems.value.length > 0) {
+    selectedItem.value = filteredItems.value[0].type
+  }
+  nextTick(buildChart)
+}
+
+const currentItemData = computed(() => {
+  if (!props.data || !selectedItem.value) return null
+  return allItems.value.find(c => c.type === selectedItem.value)
 })
 
 function priceClass(c) {
@@ -98,16 +175,16 @@ function priceClass(c) {
 }
 
 function buildChart() {
-  if (!chartCanvas.value || !currentCropData.value || !props.data) return
+  if (!chartCanvas.value || !currentItemData.value || !props.data) return
 
-  const crop = currentCropData.value
+  const item = currentItemData.value
   const labels = props.data.periodLabels
   const currentIdx = props.data.currentPeriodIdx
 
-  const colors = crop.prices.map((_, i) =>
+  const colors = item.prices.map((_, i) =>
     i === currentIdx ? '#4caf50' : 'rgba(76, 175, 80, 0.3)'
   )
-  const borderColors = crop.prices.map((_, i) =>
+  const borderColors = item.prices.map((_, i) =>
     i === currentIdx ? '#81c784' : 'rgba(76, 175, 80, 0.6)'
   )
 
@@ -121,8 +198,8 @@ function buildChart() {
     data: {
       labels,
       datasets: [{
-        label: `${crop.emoji} ${crop.name} (PLN/t)`,
-        data: crop.prices,
+        label: `${item.emoji} ${item.name} (PLN/t)`,
+        data: item.prices,
         backgroundColor: colors,
         borderColor: borderColors,
         borderWidth: 1,
@@ -137,7 +214,7 @@ function buildChart() {
         tooltip: {
           callbacks: {
             label: ctx => `${ctx.parsed.y} PLN/t`,
-            afterLabel: (ctx) => ctx.dataIndex === currentIdx ? '← aktualny' : '',
+            afterLabel: ctx => ctx.dataIndex === currentIdx ? '← aktualny' : '',
           },
         },
       },
@@ -156,20 +233,20 @@ function buildChart() {
 }
 
 onMounted(() => {
-  if (props.data?.crops?.length) {
-    selectedCrop.value = props.data.crops[0].type
+  if (allItems.value.length) {
+    selectedItem.value = allItems.value[0].type
     nextTick(buildChart)
   }
 })
 
 watch(() => props.data, (val) => {
-  if (val?.crops?.length && !selectedCrop.value) {
-    selectedCrop.value = val.crops[0].type
+  if (val?.items?.length && !selectedItem.value) {
+    selectedItem.value = val.items[0].type
   }
   nextTick(buildChart)
 })
 
-watch(selectedCrop, () => nextTick(buildChart))
+watch(selectedItem, () => nextTick(buildChart))
 
 onUnmounted(() => {
   if (chartInstance) chartInstance.destroy()
@@ -191,4 +268,10 @@ onUnmounted(() => {
 
 .price-high { color: var(--accent); font-weight: 600; }
 .price-low { color: var(--danger); }
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.sortable:hover { color: var(--text); }
 </style>

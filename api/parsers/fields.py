@@ -23,6 +23,21 @@ GROUND_STATUS = {
 }
 
 
+def _load_ownership(save_path: Path) -> dict:
+    """Returns {field_id: farm_id} from farmland.xml. farm_id=0 means unowned."""
+    xml_file = save_path / "farmland.xml"
+    if not xml_file.exists():
+        return {}
+    try:
+        tree = ET.parse(xml_file)
+        return {
+            int(el.get("id", 0)): int(el.get("farmId", 0))
+            for el in tree.getroot().findall("farmland")
+        }
+    except Exception:
+        return {}
+
+
 def parse_fields(save_path: Path) -> dict:
     xml_file = save_path / "fields.xml"
     if not xml_file.exists():
@@ -31,10 +46,13 @@ def parse_fields(save_path: Path) -> dict:
     tree = ET.parse(xml_file)
     root = tree.getroot()
 
+    ownership = _load_ownership(save_path)
+
     fields = []
     ready = []
     growing = []
     empty = []
+    owned_ready = []
 
     for field_el in root.findall("field"):
         field_id = int(field_el.get("id", 0))
@@ -45,12 +63,15 @@ def parse_fields(save_path: Path) -> dict:
         spray_level = int(field_el.get("sprayLevel", 0))
         lime_level = int(field_el.get("limeLevel", 0))
         spray_type = field_el.get("sprayType", "NONE")
+        farm_id = ownership.get(field_id, 0)
 
         status = _get_status(fruit_type, ground_type, growth_state)
         emoji = FRUIT_EMOJI.get(fruit_type, "🌱")
 
         field = {
             "id": field_id,
+            "farmId": farm_id,
+            "owned": farm_id != 0,
             "fruitType": fruit_type,
             "fruitEmoji": emoji,
             "groundType": ground_type,
@@ -65,21 +86,26 @@ def parse_fields(save_path: Path) -> dict:
 
         if status == "ready":
             ready.append(field_id)
+            if farm_id != 0:
+                owned_ready.append(field_id)
         elif status == "growing":
             growing.append(field_id)
         else:
             empty.append(field_id)
 
     fields.sort(key=lambda f: f["id"])
+    owned_fields = [f for f in fields if f["owned"]]
 
     return {
         "fields": fields,
         "summary": {
             "total": len(fields),
+            "owned": len(owned_fields),
             "ready": len(ready),
             "growing": len(growing),
             "empty": len(empty),
             "readyIds": ready,
+            "ownedReadyIds": owned_ready,
         }
     }
 
