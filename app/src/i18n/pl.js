@@ -31,6 +31,7 @@ export default {
       storage: '🏪 Magazyn',
       precision: '🌱 Precision Farming',
       animals: '🐄 Zwierzęta',
+      production: '🏭 Produkcja',
     },
 
     overview: {
@@ -184,6 +185,34 @@ export default {
       errorStorage: 'Błąd ładowania magazynu',
       errorPrecision: 'Błąd ładowania Precision Farming',
       errorAnimals: 'Błąd ładowania danych zwierząt',
+      errorProduction: 'Błąd ładowania produkcji',
+    },
+
+    production: {
+      loading: 'Ładowanie danych produkcji...',
+      empty: 'Brak zakładów produkcyjnych przypisanych do Twojego gospodarstwa.',
+      totalFacilities: 'Zakłady',
+      activeProductions: 'Aktywne produkcje',
+      enabled: 'Aktywna',
+      disabled: 'Wyłączona',
+      productions: 'Produkcje',
+      categories: {
+        greenhouse:    '🌿 Szklarnia',
+        bakery:        '🥐 Piekarnia',
+        flourmill:     '⚙️ Młyn',
+        sawmill:       '🪵 Tartak',
+        spinnery:      '🧶 Przędzalnia',
+        biogas:        '♻️ Biogazownia',
+        dairy:         '🧀 Mleczarnia',
+        oilmill:       '🫒 Olejarnia',
+        winery:        '🍷 Winiarnia',
+        brewery:       '🍺 Browar',
+        fishfarm:      '🐟 Hodowla ryb',
+        slaughterhouse:'🥩 Rzeźnia',
+        quarry:        '⛏️ Kamieniołom',
+        factory:       '🏭 Fabryka',
+        other:         '🏗️ Inne',
+      },
     },
 
     animals: {

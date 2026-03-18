@@ -31,6 +31,7 @@ export default {
       storage: '🏪 Storage',
       precision: '🌱 Precision Farming',
       animals: '🐄 Animals',
+      production: '🏭 Production',
     },
 
     overview: {
@@ -184,6 +185,34 @@ export default {
       errorStorage: 'Error loading storage',
       errorPrecision: 'Error loading Precision Farming',
       errorAnimals: 'Error loading animal data',
+      errorProduction: 'Error loading production data',
+    },
+
+    production: {
+      loading: 'Loading production data...',
+      empty: 'No production facilities assigned to your farm.',
+      totalFacilities: 'Facilities',
+      activeProductions: 'Active productions',
+      enabled: 'Active',
+      disabled: 'Disabled',
+      productions: 'Productions',
+      categories: {
+        greenhouse:    '🌿 Greenhouse',
+        bakery:        '🥐 Bakery',
+        flourmill:     '⚙️ Flour Mill',
+        sawmill:       '🪵 Sawmill',
+        spinnery:      '🧶 Spinnery',
+        biogas:        '♻️ Biogas Plant',
+        dairy:         '🧀 Dairy',
+        oilmill:       '🫒 Oil Mill',
+        winery:        '🍷 Winery',
+        brewery:       '🍺 Brewery',
+        fishfarm:      '🐟 Fish Farm',
+        slaughterhouse:'🥩 Slaughterhouse',
+        quarry:        '⛏️ Quarry',
+        factory:       '🏭 Factory',
+        other:         '🏗️ Other',
+      },
     },
 
     animals: {
