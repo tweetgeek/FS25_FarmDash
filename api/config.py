@@ -1,8 +1,16 @@
 import json
-import os
+import sys
 from pathlib import Path
 
-CONFIG_FILE = Path(__file__).parent.parent / "config.json"
+
+def _config_path() -> Path:
+    """Returns config.json path next to the executable (or project root in dev)."""
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).parent / "config.json"
+    return Path(__file__).parent.parent / "config.json"
+
+
+CONFIG_FILE = _config_path()
 
 DEFAULT_CONFIG = {
     "fs25_path": "",
