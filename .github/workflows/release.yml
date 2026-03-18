@@ -34,15 +34,28 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
+      - name: Convert icon PNG to ICO
+        run: python -c "from PIL import Image; img = Image.open('icon.png'); img.save('icon.ico', format='ICO', sizes=[(256,256),(64,64),(32,32),(16,16)])"
+
       - name: Build Windows executable
         run: |
           pyinstaller --onefile --name FarmDash --noconsole `
+            --icon icon.ico `
+            --add-data "icon.png;." `
             --add-data "api\static;api\static" `
             --collect-all uvicorn `
             --collect-all starlette `
+            --collect-all pystray `
             --hidden-import fastapi `
             --hidden-import anyio `
             --hidden-import anyio._backends._asyncio `
+            --hidden-import pystray._win32 `
+            --hidden-import PIL `
+            --hidden-import PIL.Image `
+            --hidden-import PIL.ImageDraw `
+            --collect-all tkinter `
+            --hidden-import tkinter `
+            --hidden-import tkinter.filedialog `
             main.py
 
       - name: Upload FarmDash.exe to release

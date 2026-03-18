@@ -231,4 +231,6 @@ venv.bak/
 node_modules
 api/static/
 
+config.json
+
 .idea/

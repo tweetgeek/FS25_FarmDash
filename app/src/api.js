@@ -19,6 +19,14 @@ export function saveConfig(data) {
   })
 }
 
+export function detectSavesPath() {
+  return apiFetch('/api/detect-saves-path')
+}
+
+export function browseFolder() {
+  return apiFetch('/api/browse-folder')
+}
+
 export function getSaves() {
   return apiFetch('/api/saves')
 }

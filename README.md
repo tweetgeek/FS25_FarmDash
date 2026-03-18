@@ -1,4 +1,6 @@
-# 🚜 FarmDash
+# FarmDash
+
+<img src="icon.png" alt="FarmDash" width="120" />
 
 A local web dashboard for **Farming Simulator 25** that reads your save files in real time and displays farm stats in your browser.
 
@@ -21,7 +23,7 @@ A local web dashboard for **Farming Simulator 25** that reads your save files in
 3. Run `FarmDash.exe` — a browser tab opens at `http://localhost:9988`
 4. Paste the path to your FS25 saves folder, for example:
    ```
-   C:\Users\YourName\Documents\My Games\FarmingSimulator2025\savegame
+   C:\Users\YourName\Documents\My Games\FarmingSimulator2025
    ```
 5. Click **Save configuration**, then pick a save game from the list
 
@@ -77,13 +79,22 @@ The release is built automatically via GitHub Actions on every published release
 ```bash
 pip install pyinstaller
 cd app && npm ci && npm run build && cd ..
+python -c "from PIL import Image; img = Image.open('icon.png'); img.save('icon.ico', format='ICO', sizes=[(256,256),(64,64),(32,32),(16,16)])"
 pyinstaller --onefile --name FarmDash --noconsole ^
+  --icon icon.ico ^
+  --add-data "icon.png;." ^
   --add-data "api\static;api\static" ^
   --collect-all uvicorn ^
   --collect-all starlette ^
+  --collect-all pystray ^
+  --collect-all tkinter ^
   --hidden-import fastapi ^
   --hidden-import anyio ^
   --hidden-import anyio._backends._asyncio ^
+  --hidden-import pystray._win32 ^
+  --hidden-import PIL ^
+  --hidden-import PIL.Image ^
+  --hidden-import tkinter.filedialog ^
   main.py
 ```
 
