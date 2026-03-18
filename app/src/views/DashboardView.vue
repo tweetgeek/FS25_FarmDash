@@ -63,6 +63,9 @@
       <div v-show="activeTab === 'precision'">
         <PrecisionTab :data="precisionData" :loading="precisionLoading" :error="precisionError" />
       </div>
+      <div v-show="activeTab === 'animals'">
+        <AnimalsTab :data="animalsData" :loading="animalsLoading" :error="animalsError" />
+      </div>
 
     </div>
   </main>
@@ -71,7 +74,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { getConfig, getSummary, getFields, getVehicles, getWeather, getEconomy, getStorage, getLocalAddress, getPrecisionFarming } from '../api.js'
+import { getConfig, getSummary, getFields, getVehicles, getWeather, getEconomy, getStorage, getLocalAddress, getPrecisionFarming, getAnimals } from '../api.js'
 import { useI18n } from '../i18n/index.js'
 import { useTheme } from '../theme.js'
 import { usePersist } from '../useUIState.js'
@@ -81,6 +84,7 @@ import VehiclesTab from '../components/VehiclesTab.vue'
 import PricesTab from '../components/PricesTab.vue'
 import StorageTab from '../components/StorageTab.vue'
 import PrecisionTab from '../components/PrecisionTab.vue'
+import AnimalsTab from '../components/AnimalsTab.vue'
 
 const { t, locale, setLocale } = useI18n()
 function toggleLocale() { setLocale(locale.value === 'pl' ? 'en' : 'pl') }
@@ -93,6 +97,7 @@ const TABS = [
   { id: 'prices' },
   { id: 'storage' },
   { id: 'precision' },
+  { id: 'animals' },
 ]
 
 const route = useRoute()
@@ -136,6 +141,10 @@ const precisionData = ref(null)
 const precisionLoading = ref(true)
 const precisionError = ref(null)
 
+const animalsData = ref(null)
+const animalsLoading = ref(true)
+const animalsError = ref(null)
+
 const saveTitle = computed(() => {
   const career = overviewData.value?.career
   if (!career) return t('ui.dashboard.loadingTitle')
@@ -152,7 +161,7 @@ onMounted(async () => {
 
   getLocalAddress().then(r => { localUrl.value = r.url }).catch(() => {})
 
-  await Promise.all([loadOverview(), loadFields(), loadVehicles(), loadWeather(), loadPrices(), loadStorage(), loadPrecision()])
+  await Promise.all([loadOverview(), loadFields(), loadVehicles(), loadWeather(), loadPrices(), loadStorage(), loadPrecision(), loadAnimals()])
   setRefreshOk()
   scheduleRefresh()
 })
@@ -255,6 +264,18 @@ async function loadPrecision() {
   }
 }
 
+async function loadAnimals() {
+  animalsLoading.value = true
+  animalsError.value = null
+  try {
+    animalsData.value = await getAnimals(saveId)
+  } catch (e) {
+    animalsError.value = t('ui.dashboard.errorAnimals') + ': ' + e.message
+  } finally {
+    animalsLoading.value = false
+  }
+}
+
 async function loadTab(tab) {
   switch (tab) {
     case 'overview':   await Promise.all([loadOverview(), loadWeather()]); break
@@ -263,6 +284,7 @@ async function loadTab(tab) {
     case 'prices':     await loadPrices(); break
     case 'storage':    await loadStorage(); break
     case 'precision':  await loadPrecision(); break
+    case 'animals':    await loadAnimals(); break
   }
 }
 

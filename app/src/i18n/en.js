@@ -30,6 +30,7 @@ export default {
       prices: '💰 Market prices',
       storage: '🏪 Storage',
       precision: '🌱 Precision Farming',
+      animals: '🐄 Animals',
     },
 
     overview: {
@@ -182,6 +183,33 @@ export default {
       errorPrices: 'Error loading prices',
       errorStorage: 'Error loading storage',
       errorPrecision: 'Error loading Precision Farming',
+      errorAnimals: 'Error loading animal data',
+    },
+
+    animals: {
+      loading: 'Loading animal data...',
+      empty: 'No livestock buildings found in this save.',
+      totalAnimals: 'Total animals',
+      health: 'Health',
+      production: 'Production',
+      food: 'Feed',
+      products: 'Ready to collect',
+      count: 'pcs.',
+      avgHealth: 'Avg health',
+      noHealth: '—',
+      types: {
+        sheep: '🐑 Sheep',
+        cow: '🐄 Cows',
+        chicken: '🐔 Chickens',
+        pig: '🐷 Pigs',
+        horse: '🐴 Horses',
+        goat: '🐐 Goats',
+        donkey: '🫏 Donkeys',
+        bee: '🐝 Bees',
+        deer: '🦌 Deer',
+        rabbit: '🐇 Rabbits',
+        ostrich: '🦤 Ostriches',
+      },
     },
 
     storage: {
