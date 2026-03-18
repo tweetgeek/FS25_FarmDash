@@ -62,3 +62,7 @@ export function getStorage(saveId) {
 export function getPrecisionFarming(saveId) {
   return apiFetch(`/api/save/${encodeURIComponent(saveId)}/precision`)
 }
+
+export function getAnimals(saveId) {
+  return apiFetch(`/api/save/${encodeURIComponent(saveId)}/animals`)
+}

@@ -30,6 +30,7 @@ export default {
       prices: '💰 Ceny skupu',
       storage: '🏪 Magazyn',
       precision: '🌱 Precision Farming',
+      animals: '🐄 Zwierzęta',
     },
 
     overview: {
@@ -182,6 +183,33 @@ export default {
       errorPrices: 'Błąd ładowania cen',
       errorStorage: 'Błąd ładowania magazynu',
       errorPrecision: 'Błąd ładowania Precision Farming',
+      errorAnimals: 'Błąd ładowania danych zwierząt',
+    },
+
+    animals: {
+      loading: 'Ładowanie danych zwierząt...',
+      empty: 'Brak budynków inwentarskich w tym zapisie.',
+      totalAnimals: 'Łącznie zwierząt',
+      health: 'Zdrowie',
+      production: 'Produkcja',
+      food: 'Pasza',
+      products: 'Do zebrania',
+      count: 'szt.',
+      avgHealth: 'Śr. zdrowie',
+      noHealth: '—',
+      types: {
+        sheep: '🐑 Owce',
+        cow: '🐄 Krowy',
+        chicken: '🐔 Kury',
+        pig: '🐷 Świnie',
+        horse: '🐴 Konie',
+        goat: '🐐 Kozy',
+        donkey: '🫏 Osły',
+        bee: '🐝 Pszczoły',
+        deer: '🦌 Jelenie',
+        rabbit: '🐇 Króliki',
+        ostrich: '🦤 Strusie',
+      },
     },
 
     storage: {
