@@ -16,16 +16,16 @@
 
   <div class="refresh-bar">
     <div class="container">
-      <span>Ostatnie odświeżenie: <span>{{ lastRefresh || '—' }}</span></span>
+      <span>{{ t('ui.dashboard.lastRefresh') }}: <span>{{ lastRefresh || '—' }}</span></span>
       <span v-if="localUrl" style="color:var(--text-dim); display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <a :href="localUrl" target="_blank" style="color:var(--accent2); font-family:monospace; font-size:12px;">📱 {{ localUrl }}</a>
         <button @click="copyAddress" style="background:none; border:none; cursor:pointer; color:var(--text-dim); font-size:12px; padding:0; white-space:nowrap;">
-          {{ copied ? '✓ Skopiowano' : '⎘ Kopiuj' }}
+          {{ copied ? t('ui.dashboard.copied') : t('ui.dashboard.copy') }}
         </button>
       </span>
       <span class="refresh-status">
-        <template v-if="refreshStatus">{{ refreshStatus }}</template>
-        <template v-else-if="secondsLeft > 0">⏱️ Odświeżenie za {{ secondsLeft }}s</template>
+        <template v-if="refreshStatus">{{ t('ui.dashboard.' + refreshStatus) }}</template>
+        <template v-else-if="secondsLeft > 0">⏱️ {{ t('ui.dashboard.refreshIn') }} {{ secondsLeft }}s</template>
       </span>
     </div>
   </div>
@@ -74,6 +74,7 @@ import { useRoute } from 'vue-router'
 import { getConfig, getSummary, getFields, getVehicles, getWeather, getEconomy, getStorage, getLocalAddress, getPrecisionFarming } from '../api.js'
 import { useI18n } from '../i18n/index.js'
 import { useTheme } from '../theme.js'
+import { usePersist } from '../useUIState.js'
 import OverviewTab from '../components/OverviewTab.vue'
 import FieldsTab from '../components/FieldsTab.vue'
 import VehiclesTab from '../components/VehiclesTab.vue'
@@ -97,10 +98,10 @@ const TABS = [
 const route = useRoute()
 const saveId = route.query.save
 
-const activeTab = ref('overview')
+const activeTab = usePersist('fd_activeTab', 'overview')
 const refreshInterval = ref(30)
 const lastRefresh = ref(null)
-const refreshStatus = ref('⏳ Ładowanie danych...')
+const refreshStatus = ref('loading')
 const localUrl = ref(null)
 const copied = ref(false)
 let timer = null
@@ -137,7 +138,7 @@ const precisionError = ref(null)
 
 const saveTitle = computed(() => {
   const career = overviewData.value?.career
-  if (!career) return 'Ładowanie...'
+  if (!career) return t('ui.dashboard.loadingTitle')
   return `${career.savegameName || saveId} | ${career.mapTitle || '—'}`
 })
 
@@ -176,7 +177,7 @@ async function loadOverview() {
   try {
     overviewData.value = await getSummary(saveId)
   } catch (e) {
-    overviewError.value = 'Błąd ładowania przeglądu: ' + e.message
+    overviewError.value = t('ui.dashboard.errorOverview') + ': ' + e.message
   } finally {
     overviewLoading.value = false
   }
@@ -188,7 +189,7 @@ async function loadFields() {
   try {
     fieldsData.value = await getFields(saveId)
   } catch (e) {
-    fieldsError.value = 'Błąd ładowania pól: ' + e.message
+    fieldsError.value = t('ui.dashboard.errorFields') + ': ' + e.message
   } finally {
     fieldsLoading.value = false
   }
@@ -200,7 +201,7 @@ async function loadVehicles() {
   try {
     vehiclesData.value = await getVehicles(saveId)
   } catch (e) {
-    vehiclesError.value = 'Błąd ładowania pojazdów: ' + e.message
+    vehiclesError.value = t('ui.dashboard.errorVehicles') + ': ' + e.message
   } finally {
     vehiclesLoading.value = false
   }
@@ -212,7 +213,7 @@ async function loadWeather() {
   try {
     weatherData.value = await getWeather(saveId)
   } catch (e) {
-    weatherError.value = 'Błąd ładowania pogody: ' + e.message
+    weatherError.value = t('ui.dashboard.errorWeather') + ': ' + e.message
   } finally {
     weatherLoading.value = false
   }
@@ -224,7 +225,7 @@ async function loadPrices() {
   try {
     pricesData.value = await getEconomy(saveId)
   } catch (e) {
-    pricesError.value = 'Błąd ładowania cen: ' + e.message
+    pricesError.value = t('ui.dashboard.errorPrices') + ': ' + e.message
   } finally {
     pricesLoading.value = false
   }
@@ -236,7 +237,7 @@ async function loadStorage() {
   try {
     storageData.value = await getStorage(saveId)
   } catch (e) {
-    storageError.value = 'Błąd ładowania magazynu: ' + e.message
+    storageError.value = t('ui.dashboard.errorStorage') + ': ' + e.message
   } finally {
     storageLoading.value = false
   }
@@ -248,7 +249,7 @@ async function loadPrecision() {
   try {
     precisionData.value = await getPrecisionFarming(saveId)
   } catch (e) {
-    precisionError.value = 'Błąd ładowania Precision Farming: ' + e.message
+    precisionError.value = t('ui.dashboard.errorPrecision') + ': ' + e.message
   } finally {
     precisionLoading.value = false
   }
@@ -283,7 +284,7 @@ function scheduleRefresh() {
   if (timer) clearTimeout(timer)
   timer = setTimeout(async () => {
     if (countdown) { clearInterval(countdown); countdown = null }
-    refreshStatus.value = '🔄 Odświeżanie...'
+    refreshStatus.value = 'refreshing'
     await loadTab(activeTab.value)
     if (activeTab.value !== 'overview') { loadOverview(); loadWeather() }
     setRefreshOk()

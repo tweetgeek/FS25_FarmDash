@@ -191,6 +191,7 @@
 import { ref, computed, watch } from 'vue'
 import { formatMoney } from '../utils.js'
 import { useI18n } from '../i18n/index.js'
+import { usePersist } from '../useUIState.js'
 
 const { t } = useI18n()
 
@@ -210,7 +211,7 @@ const FILTERS = [
   { value: 'all',   label: () => t('ui.precision.filterAll'),   count: () => fields.value.length },
 ]
 
-const filter = ref('owned')
+const filter = usePersist('fd_precisionFilter', 'owned')
 watch(() => props.data, (val) => {
   if (val && ownedFields.value.length === 0) filter.value = 'all'
 }, { immediate: true })
