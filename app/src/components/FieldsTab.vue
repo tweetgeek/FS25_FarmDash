@@ -46,7 +46,15 @@
                 <strong>{{ f.id }}</strong>
                 <span v-if="f.owned" style="margin-left:4px; font-size:11px;" title="Twoje pole">🏠</span>
               </td>
-              <td>{{ f.fruitEmoji }} {{ tFruit(f.fruitType) }}</td>
+              <td>
+                <span
+                  v-if="f.fruitType && f.fruitType !== 'NONE'"
+                  class="crop-link"
+                  :title="t('ui.fields.seePrices')"
+                  @click="goToPrices(tFruit(f.fruitType))"
+                >{{ f.fruitEmoji }} {{ tFruit(f.fruitType) }}</span>
+                <span v-else style="color:var(--text-dim)">—</span>
+              </td>
               <td>
                 <span :class="['status-badge', 'status-' + f.status]">
                   {{ statusLabel(f.status) }}
@@ -86,6 +94,7 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from '../i18n/index.js'
 import { usePersist } from '../useUIState.js'
+import { goToPrices } from '../useNavigation.js'
 
 const { t, tFruit } = useI18n()
 
@@ -135,3 +144,15 @@ function weedPct(f) {
   return Math.round((f.weedState / 9) * 100)
 }
 </script>
+
+<style scoped>
+.crop-link {
+  cursor: pointer;
+  border-bottom: 1px dashed var(--text-dim);
+  transition: color 0.15s, border-color 0.15s;
+}
+.crop-link:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+</style>

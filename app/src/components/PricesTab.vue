@@ -10,7 +10,7 @@
       </div>
 
       <!-- Category filter -->
-      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px;">
+      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
         <button
           :class="['tab-btn', { active: activeCategory === null }]"
           style="font-size:12px; padding:5px 12px;"
@@ -27,6 +27,19 @@
         >
           {{ t('categories.' + key + '.emoji') }} {{ t('categories.' + key + '.label') }} ({{ countByCategory(key) }})
         </button>
+      </div>
+
+      <!-- Search filter -->
+      <div class="search-bar" style="margin-bottom:16px;">
+        <span class="search-icon">🔍</span>
+        <input
+          ref="searchInput"
+          v-model="searchQuery"
+          type="text"
+          class="search-input"
+          :placeholder="t('ui.prices.searchPlaceholder')"
+        />
+        <button v-if="searchQuery" class="search-clear" @click="clearSearch" :title="t('ui.prices.clearSearch')">×</button>
       </div>
 
       <!-- Chart -->
@@ -67,12 +80,12 @@
             >
               <td><strong>{{ c.emoji }} {{ tItem(c.type) }}</strong></td>
               <td>
-                <span :class="priceClass(c)">{{ c.currentPrice }} PLN/t</span>
+                <span :class="priceClass(c)">{{ formatPrice(c.currentPrice, locale) }}</span>
               </td>
-              <td style="color:var(--text-dim)">{{ c.nextPrice }} PLN/t</td>
-              <td style="color:var(--text-dim)">{{ c.minPrice }}</td>
+              <td style="color:var(--text-dim)">{{ formatPrice(c.nextPrice, locale) }}</td>
+              <td style="color:var(--text-dim)">{{ formatPrice(c.minPrice, locale) }}</td>
               <td>
-                <span style="color:var(--accent)">{{ c.maxPrice }}</span>
+                <span style="color:var(--accent)">{{ formatPrice(c.maxPrice, locale) }}</span>
                 <small style="color:var(--text-dim)"> ({{ periodLabels[c.maxPeriodIdx] }})</small>
               </td>
               <td>
@@ -94,6 +107,8 @@ import { ref, watch, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import { Chart, LineController, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Filler } from 'chart.js'
 import { useI18n } from '../i18n/index.js'
 import { usePersist } from '../useUIState.js'
+import { formatPrice } from '../utils.js'
+import { pricesSearch, pricesCategory } from '../useNavigation.js'
 
 Chart.register(LineController, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Filler)
 
@@ -111,8 +126,10 @@ const props = defineProps({
 })
 
 const chartCanvas = ref(null)
+const searchInput = ref(null)
 const selectedItem = ref(null)
-const activeCategory = usePersist('fd_pricesCategory', null)
+const activeCategory = pricesCategory   // shared singleton from useNavigation
+const searchQuery    = pricesSearch     // shared singleton from useNavigation
 let chartInstance = null
 
 const allItems = computed(() => props.data?.items || [])
@@ -162,15 +179,24 @@ function sortIcon(col) {
 }
 
 const filteredItems = computed(() => {
-  const base = activeCategory.value
+  let base = activeCategory.value
     ? allItems.value.filter(i => i.category === activeCategory.value)
     : allItems.value
+  const q = searchQuery.value.trim().toLowerCase()
+  if (q) {
+    base = base.filter(i => tItem(i.type).toLowerCase().includes(q))
+  }
   const keyFn = SORT_KEYS[sortCol.value] ?? SORT_KEYS.currentPrice
   return [...base].sort((a, b) => {
     const av = keyFn(a), bv = keyFn(b)
     return av < bv ? -sortDir.value : av > bv ? sortDir.value : 0
   })
 })
+
+function clearSearch() {
+  searchQuery.value = ''
+  searchInput.value?.focus()
+}
 
 function setCategory(key) {
   activeCategory.value = key
@@ -229,7 +255,7 @@ function buildChart() {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: ctx => `${ctx.parsed.y} PLN/t`,
+            label: ctx => formatPrice(ctx.parsed.y, locale.value),
             afterLabel: ctx => ctx.dataIndex === currentIdx ? t('ui.prices.currentMarker') : '',
           },
         },
@@ -240,7 +266,7 @@ function buildChart() {
           grid: { color: 'rgba(53, 59, 72, 0.5)' },
         },
         y: {
-          ticks: { color: '#9ea7b3', callback: v => v + ' PLN' },
+          ticks: { color: '#9ea7b3', callback: v => formatPrice(v, locale.value) },
           grid: { color: 'rgba(53, 59, 72, 0.5)' },
         },
       },
@@ -263,6 +289,13 @@ watch(() => props.data, (val) => {
 })
 
 watch(selectedItem, () => nextTick(buildChart))
+
+watch(searchQuery, () => {
+  if (filteredItems.value.length > 0 && !filteredItems.value.find(i => i.type === selectedItem.value)) {
+    selectedItem.value = filteredItems.value[0].type
+  }
+  nextTick(buildChart)
+})
 
 // Rebuild chart when locale changes (labels update)
 watch(locale, () => nextTick(buildChart))
@@ -293,4 +326,50 @@ onUnmounted(() => {
   user-select: none;
 }
 .sortable:hover { color: var(--text); }
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 10px;
+  max-width: 340px;
+  transition: border-color 0.15s;
+}
+.search-bar:focus-within { border-color: var(--accent); }
+
+.search-icon {
+  font-size: 14px;
+  opacity: 0.5;
+  pointer-events: none;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 13px;
+  padding: 7px 0;
+  min-width: 0;
+}
+.search-input::placeholder { color: var(--text-dim); }
+
+.search-clear {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0 0 6px;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+.search-clear:hover { color: var(--text); }
 </style>

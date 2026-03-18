@@ -14,16 +14,16 @@
         <div class="summary-grid">
           <div class="summary-item">
             <div class="summary-label">{{ t('ui.storage.valueNow') }}</div>
-            <div class="summary-value">{{ formatMoney(totalCurrentValue) }}</div>
+            <div class="summary-value">{{ formatMoney(totalCurrentValue, locale) }}</div>
           </div>
           <div class="summary-item">
             <div class="summary-label">{{ t('ui.storage.valueMax') }}</div>
-            <div class="summary-value accent2">{{ formatMoney(totalMaxValue) }}</div>
+            <div class="summary-value accent2">{{ formatMoney(totalMaxValue, locale) }}</div>
           </div>
           <div class="summary-item">
             <div class="summary-label">{{ t('ui.storage.potentialGain') }}</div>
             <div class="summary-value gain">
-              +{{ formatMoney(totalMaxValue - totalCurrentValue) }}
+              +{{ formatMoney(totalMaxValue - totalCurrentValue, locale) }}
               <span class="gain-pct">(+{{ gainPct }}%)</span>
             </div>
           </div>
@@ -49,17 +49,23 @@
           </thead>
           <tbody>
             <tr v-for="row in pricedItems" :key="row.item.type">
-              <td><strong>{{ row.item.emoji }} {{ tItem(row.item.type) }}</strong></td>
+              <td>
+                <strong
+                  class="crop-link"
+                  :title="t('ui.fields.seePrices')"
+                  @click="goToPrices(tItem(row.item.type))"
+                >{{ row.item.emoji }} {{ tItem(row.item.type) }}</strong>
+              </td>
               <td>{{ formatAmount(row.item.level) }}</td>
-              <td>{{ row.price.currentPrice }} PLN/t</td>
-              <td style="color:var(--accent); font-weight:600">{{ formatMoney(row.currentValue) }}</td>
+              <td>{{ formatPrice(row.price.currentPrice, locale) }}</td>
+              <td style="color:var(--accent); font-weight:600">{{ formatMoney(row.currentValue, locale) }}</td>
               <td style="color:var(--text-dim)">
-                {{ row.price.maxPrice }} PLN/t
+                {{ formatPrice(row.price.maxPrice, locale) }}
                 <small>({{ row.price.maxPeriodLabel }})</small>
               </td>
-              <td style="color:var(--accent2); font-weight:600">{{ formatMoney(row.maxValue) }}</td>
+              <td style="color:var(--accent2); font-weight:600">{{ formatMoney(row.maxValue, locale) }}</td>
               <td>
-                <span v-if="row.gain > 0" class="gain-badge">+{{ formatMoney(row.gain) }}</span>
+                <span v-if="row.gain > 0" class="gain-badge">+{{ formatMoney(row.gain, locale) }}</span>
                 <span v-else style="color:var(--text-dim)">—</span>
               </td>
             </tr>
@@ -96,10 +102,11 @@
 
 <script setup>
 import { computed } from 'vue'
-import { formatMoney } from '../utils.js'
+import { formatMoney, formatPrice } from '../utils.js'
 import { useI18n } from '../i18n/index.js'
+import { goToPrices } from '../useNavigation.js'
 
-const { t, tItem } = useI18n()
+const { t, tItem, locale } = useI18n()
 
 const props = defineProps({
   data: Object,
@@ -226,7 +233,7 @@ function barClass(catKey) {
 
 .gain-badge {
   display: inline-block;
-  background: #1b3a1c;
+  background: var(--badge-good-bg);
   color: var(--accent);
   border-radius: 6px;
   padding: 2px 8px;
@@ -269,5 +276,15 @@ function barClass(catKey) {
 
 @media (max-width: 700px) {
   .summary-grid { grid-template-columns: 1fr; }
+}
+
+.crop-link {
+  cursor: pointer;
+  border-bottom: 1px dashed var(--text-dim);
+  transition: color 0.15s, border-color 0.15s;
+}
+.crop-link:hover {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 </style>

@@ -19,6 +19,7 @@ jobs:
           VERSION="${{ github.ref_name }}"
           VERSION="${VERSION#v}"
           printf 'VERSION = "%s"\n' "$VERSION" > api/__init__.py
+          echo "APP_VERSION=$VERSION" >> "$GITHUB_ENV"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -44,10 +45,14 @@ jobs:
       - name: Convert icon PNG to ICO
         run: python -c "from PIL import Image; img = Image.open('icon.png'); img.save('icon.ico', format='ICO', sizes=[(256,256),(64,64),(32,32),(16,16)])"
 
+      - name: Generate Windows version info
+        run: python build_version_info.py ${{ env.APP_VERSION }}
+
       - name: Build Windows executable
         run: |
-          pyinstaller --onefile --name FarmDash --noconsole `
+          pyinstaller --onefile --name "FarmDash-${{ env.APP_VERSION }}" --noconsole `
             --icon icon.ico `
+            --version-file version_info.txt `
             --add-data "icon.png;." `
             --add-data "api\static;api\static" `
             --collect-all uvicorn `
@@ -68,4 +73,4 @@ jobs:
       - name: Upload FarmDash.exe to release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/FarmDash.exe
+          files: dist/FarmDash-${{ env.APP_VERSION }}.exe

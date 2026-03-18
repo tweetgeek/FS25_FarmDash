@@ -25,7 +25,8 @@ CONFIG_FILE = _config_dir() / "config.json"
 DEFAULT_CONFIG = {
     "fs25_path": "",
     "refresh_interval": 60,
-    "selected_save": None
+    "selected_save": None,
+    "open_browser_on_start": False,
 }
 
 
