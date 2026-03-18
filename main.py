@@ -46,19 +46,39 @@ def _open_browser():
     webbrowser.open("http://localhost:9988")
 
 
+def _get_local_ip() -> str:
+    import socket
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(0)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"
+
+
 if __name__ == "__main__":
+    PORT = 9988
+    local_url = f"http://{_get_local_ip()}:{PORT}"
+
     log_config = None if getattr(sys, "frozen", False) else uvicorn.config.LOGGING_CONFIG
 
-    config = uvicorn.Config(app, host="localhost", port=9988, reload=False, log_config=log_config)
+    config = uvicorn.Config(app, host="0.0.0.0", port=PORT, reload=False, log_config=log_config)
     server = uvicorn.Server(config)
 
     threading.Thread(target=server.run, daemon=True).start()
     threading.Thread(target=_open_browser, daemon=True).start()
 
     import pystray
+    import subprocess
 
     def on_open(icon, item):
         webbrowser.open("http://localhost:9988")
+
+    def on_copy_address(icon, item):
+        subprocess.run(["clip"], input=local_url.encode(), check=False)
 
     def on_quit(icon, item):
         server.should_exit = True
@@ -70,6 +90,7 @@ if __name__ == "__main__":
         "FarmDash — FS25 Dashboard",
         menu=pystray.Menu(
             pystray.MenuItem("Open FarmDash", on_open, default=True),
+            pystray.MenuItem(f"Copy network address  ({local_url})", on_copy_address),
             pystray.MenuItem("Quit", on_quit),
         ),
     )

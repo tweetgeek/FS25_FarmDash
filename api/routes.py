@@ -13,6 +13,21 @@ from api.parsers.storages import parse_storages
 
 router = APIRouter()
 
+PORT = 9988
+
+
+def _get_local_ip() -> str:
+    import socket
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(0)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"
+
 
 def _is_savegame_dir(name: str) -> bool:
     """Matches savegame1, savegame2, ... but not savegameBackup etc."""
@@ -23,6 +38,11 @@ def _is_savegame_dir(name: str) -> bool:
 @router.get("/config")
 def get_config():
     return read_config()
+
+
+@router.get("/local-address")
+def get_local_address():
+    return {"url": f"http://{_get_local_ip()}:{PORT}"}
 
 
 @router.get("/detect-saves-path")

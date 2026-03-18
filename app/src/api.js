@@ -11,6 +11,10 @@ export function getConfig() {
   return apiFetch('/api/config')
 }
 
+export function getLocalAddress() {
+  return apiFetch('/api/local-address')
+}
+
 export function saveConfig(data) {
   return apiFetch('/api/config', {
     method: 'POST',
