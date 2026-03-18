@@ -42,5 +42,7 @@ def open_browser():
 
 if __name__ == "__main__":
     threading.Thread(target=open_browser, daemon=True).start()
-    # Pass app object directly — string import doesn't work in PyInstaller bundle
-    uvicorn.run(app, host="localhost", port=9988, reload=False)
+    # log_config=None — prevents uvicorn from calling sys.stdout.isatty()
+    # which crashes when --noconsole sets sys.stdout to None
+    log_config = None if getattr(sys, "frozen", False) else uvicorn.config.LOGGING_CONFIG
+    uvicorn.run(app, host="localhost", port=9988, reload=False, log_config=log_config)
