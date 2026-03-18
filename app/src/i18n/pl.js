@@ -2,6 +2,7 @@ export default {
   ui: {
     backButton: '← Wróć',
     lang: '🇬🇧 EN',
+    theme: { light: '☀️', dark: '🌙', system: '💻' },
 
     home: {
       subtitle: 'Farming Simulator 25 — Panel monitorowania',
@@ -28,6 +29,7 @@ export default {
       weather: '🌤️ Pogoda',
       prices: '💰 Ceny skupu',
       storage: '🏪 Magazyn',
+      precision: '🌱 Precision Farming',
     },
 
     overview: {
@@ -124,6 +126,45 @@ export default {
       trendDown: '▼ Spada',
       trendFlat: '— Stabilna',
       currentMarker: '← aktualny',
+    },
+
+    precision: {
+      loading: 'Ładowanie danych Precision Farming...',
+      notAvailable: 'Brak danych Precision Farming — zainstaluj mod i wykonaj analizę gleby.',
+      summaryTitle: '🌱 Podsumowanie PF',
+      ownedFields: 'Moje pola',
+      fieldsSampled: 'Pola z próbką gleby',
+      totalYield: 'Łączny plon',
+      totalRevenue: 'Przychód',
+      totalCosts: 'Koszty operacyjne',
+      tableTitle: '📊 Dane pól',
+      filterOwned: '🏠 Moje pola',
+      filterAll: '🌍 Wszystkie',
+      colField: 'Pole',
+      colSoilSample: 'Próbka gleby',
+      colNitrogen: 'Azot (N)',
+      colPH: 'Odczyn (pH)',
+      colTillage: 'Uprawa gleby',
+      colHerbicide: 'Oprysk',
+      colYield: 'Plon (łącznie)',
+      colRevenue: 'Przychód',
+      colCosts: 'Koszty',
+      noSample: 'Brak próbki',
+      sampled: 'Pobrana',
+      nBalanceGood: 'Optymalny',
+      nBalanceLow: 'Niedobór',
+      nBalanceHigh: 'Nadmiar',
+      phBalanceGood: 'Optymalny',
+      phBalanceLow: 'Niedobór',
+      tillageFlat: 'Płytka',
+      tillageDeep: 'Głęboka',
+      tillageDirect: 'Bezorkowa',
+      tillageNone: 'Nieopracowana',
+      herbSpot: 'Oprysk punktowy',
+      herbFull: 'Oprysk pełny',
+      herbMech: 'Mechaniczny',
+      herbNone: 'Brak danych',
+      noData: '—',
     },
 
     storage: {

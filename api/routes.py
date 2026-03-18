@@ -10,6 +10,7 @@ from api.parsers.environment import parse_environment
 from api.parsers.missions import parse_missions
 from api.parsers.economy import parse_economy
 from api.parsers.storages import parse_storages
+from api.parsers.precision_farming import parse_precision_farming
 
 router = APIRouter()
 
@@ -185,6 +186,12 @@ def get_economy(save_id: str):
 def get_storage(save_id: str):
     save_path = _get_save_path(save_id)
     return parse_storages(save_path)
+
+
+@router.get("/save/{save_id}/precision")
+def get_precision_farming(save_id: str):
+    save_path = _get_save_path(save_id)
+    return parse_precision_farming(save_path)
 
 
 def _get_save_path(save_id: str) -> Path:
