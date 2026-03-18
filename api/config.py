@@ -1,16 +1,26 @@
 import json
+import os
 import sys
 from pathlib import Path
 
 
-def _config_path() -> Path:
-    """Returns config.json path next to the executable (or project root in dev)."""
-    if getattr(sys, "frozen", False):
-        return Path(sys.executable).parent / "config.json"
-    return Path(__file__).parent.parent / "config.json"
+def _config_dir() -> Path:
+    """Returns the FarmDash config directory, creating it if needed.
+
+    Windows : %LOCALAPPDATA%\\FarmDash
+    macOS   : ~/.config/FarmDash
+    Linux   : $XDG_CONFIG_HOME/FarmDash  (fallback: ~/.config/FarmDash)
+    """
+    if sys.platform == "win32":
+        base = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
+    else:
+        base = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+    config_dir = base / "FarmDash"
+    config_dir.mkdir(parents=True, exist_ok=True)
+    return config_dir
 
 
-CONFIG_FILE = _config_path()
+CONFIG_FILE = _config_dir() / "config.json"
 
 DEFAULT_CONFIG = {
     "fs25_path": "",

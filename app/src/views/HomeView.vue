@@ -13,15 +13,28 @@
         <h2>⚙️ Konfiguracja</h2>
         <div v-if="alert" :class="['alert', 'alert-' + alert.type]">{{ alert.message }}</div>
 
+        <div v-if="detectedPath" class="alert alert-info" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+          <span>📁 Wykryto katalog z zapisami: <strong>{{ detectedPath }}</strong></span>
+          <button class="btn" style="flex-shrink:0; padding:5px 14px; font-size:13px;" @click="fs25Path = detectedPath; detectedPath = null">
+            Użyj
+          </button>
+        </div>
+
         <div class="form-group">
           <label>Ścieżka do katalogu z zapisami FS25</label>
-          <input
-            type="text"
-            v-model="fs25Path"
-            placeholder="np. C:\Users\Użytkownik\Documents\My Games\FarmingSimulator2025\savegame"
-          />
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input
+              type="text"
+              v-model="fs25Path"
+              placeholder="np. C:\Users\Użytkownik\Documents\My Games\FarmingSimulator2025"
+              style="flex:1"
+            />
+            <button class="btn btn-secondary" :disabled="browsing" @click="onBrowse" style="white-space:nowrap; flex-shrink:0;">
+              {{ browsing ? '...' : '📁 Przeglądaj' }}
+            </button>
+          </div>
           <div style="margin-top:4px; font-size:12px; color:var(--text-dim)">
-            Wklej ścieżkę do katalogu zawierającego foldery savegame1, savegame2...
+            Wybierz katalog zawierający foldery savegame1, savegame2...
           </div>
         </div>
 
@@ -75,7 +88,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getConfig, saveConfig, getSaves } from '../api.js'
+import { getConfig, saveConfig, getSaves, browseFolder, detectSavesPath } from '../api.js'
 import { formatMoney } from '../utils.js'
 
 const router = useRouter()
@@ -83,6 +96,8 @@ const router = useRouter()
 const fs25Path = ref('')
 const refreshInterval = ref(30)
 const saving = ref(false)
+const browsing = ref(false)
+const detectedPath = ref(null)
 const alert = ref(null)
 const savesVisible = ref(false)
 const savesLoading = ref(false)
@@ -94,11 +109,29 @@ onMounted(async () => {
     const config = await getConfig()
     if (config.fs25_path) fs25Path.value = config.fs25_path
     if (config.refresh_interval) refreshInterval.value = config.refresh_interval
-    if (config.fs25_path) await loadSaves()
+    if (config.fs25_path) {
+      await loadSaves()
+    } else {
+      const detected = await detectSavesPath().catch(() => null)
+      if (detected?.path) detectedPath.value = detected.path
+    }
   } catch (e) {
     alert.value = { type: 'error', message: 'Błąd wczytywania konfiguracji: ' + e.message }
   }
 })
+
+async function onBrowse() {
+  browsing.value = true
+  alert.value = null
+  try {
+    const result = await browseFolder()
+    if (result.path) fs25Path.value = result.path
+  } catch (e) {
+    alert.value = { type: 'error', message: 'Nie można otworzyć okna wyboru folderu: ' + e.message }
+  } finally {
+    browsing.value = false
+  }
+}
 
 async function onSaveConfig() {
   if (!fs25Path.value.trim()) {
