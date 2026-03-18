@@ -45,16 +45,14 @@
       </div>
 
       <div v-show="activeTab === 'overview'">
-        <OverviewTab :data="overviewData" :loading="overviewLoading" :error="overviewError" />
+        <OverviewTab :data="overviewData" :loading="overviewLoading" :error="overviewError"
+          :weatherData="weatherData" :weatherLoading="weatherLoading" :weatherError="weatherError" />
       </div>
       <div v-show="activeTab === 'fields'">
         <FieldsTab :data="fieldsData" :loading="fieldsLoading" :error="fieldsError" />
       </div>
       <div v-show="activeTab === 'vehicles'">
         <VehiclesTab :data="vehiclesData" :loading="vehiclesLoading" :error="vehiclesError" />
-      </div>
-      <div v-show="activeTab === 'weather'">
-        <WeatherTab :data="weatherData" :loading="weatherLoading" :error="weatherError" />
       </div>
       <div v-show="activeTab === 'prices'">
         <PricesTab :data="pricesData" :loading="pricesLoading" :error="pricesError" />
@@ -79,7 +77,6 @@ import { useTheme } from '../theme.js'
 import OverviewTab from '../components/OverviewTab.vue'
 import FieldsTab from '../components/FieldsTab.vue'
 import VehiclesTab from '../components/VehiclesTab.vue'
-import WeatherTab from '../components/WeatherTab.vue'
 import PricesTab from '../components/PricesTab.vue'
 import StorageTab from '../components/StorageTab.vue'
 import PrecisionTab from '../components/PrecisionTab.vue'
@@ -92,7 +89,6 @@ const TABS = [
   { id: 'overview' },
   { id: 'fields' },
   { id: 'vehicles' },
-  { id: 'weather' },
   { id: 'prices' },
   { id: 'storage' },
   { id: 'precision' },
@@ -260,10 +256,9 @@ async function loadPrecision() {
 
 async function loadTab(tab) {
   switch (tab) {
-    case 'overview':   await loadOverview(); break
+    case 'overview':   await Promise.all([loadOverview(), loadWeather()]); break
     case 'fields':     await loadFields(); break
     case 'vehicles':   await loadVehicles(); break
-    case 'weather':    await loadWeather(); break
     case 'prices':     await loadPrices(); break
     case 'storage':    await loadStorage(); break
     case 'precision':  await loadPrecision(); break
@@ -290,7 +285,7 @@ function scheduleRefresh() {
     if (countdown) { clearInterval(countdown); countdown = null }
     refreshStatus.value = '🔄 Odświeżanie...'
     await loadTab(activeTab.value)
-    if (activeTab.value !== 'overview') loadOverview()
+    if (activeTab.value !== 'overview') { loadOverview(); loadWeather() }
     setRefreshOk()
     scheduleRefresh()
   }, refreshInterval.value * 1000)

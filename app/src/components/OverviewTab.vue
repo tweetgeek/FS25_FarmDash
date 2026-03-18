@@ -34,6 +34,8 @@
         </div>
       </div>
 
+      <WeatherTab :data="weatherData" :loading="weatherLoading" :error="weatherError" />
+
       <div class="summary-cols">
         <div class="card">
           <h2>{{ t('ui.overview.farmInfo') }}</h2>
@@ -67,6 +69,7 @@
 import { computed } from 'vue'
 import { formatMoney, round1 } from '../utils.js'
 import { useI18n } from '../i18n/index.js'
+import WeatherTab from './WeatherTab.vue'
 
 const { t } = useI18n()
 
@@ -74,6 +77,9 @@ const props = defineProps({
   data: Object,
   loading: Boolean,
   error: String,
+  weatherData: Object,
+  weatherLoading: Boolean,
+  weatherError: String,
 })
 
 const career = computed(() => props.data?.career || {})

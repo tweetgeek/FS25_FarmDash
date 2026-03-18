@@ -91,10 +91,10 @@
 
 <script setup>
 import { ref, watch, onMounted, onUnmounted, computed, nextTick } from 'vue'
-import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip } from 'chart.js'
+import { Chart, LineController, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Filler } from 'chart.js'
 import { useI18n } from '../i18n/index.js'
 
-Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip)
+Chart.register(LineController, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Filler)
 
 const { t, tItem, locale } = useI18n()
 
@@ -198,29 +198,27 @@ function buildChart() {
   const labels = periodLabels.value
   const currentIdx = props.data.currentPeriodIdx
 
-  const colors = item.prices.map((_, i) =>
-    i === currentIdx ? '#4caf50' : 'rgba(76, 175, 80, 0.3)'
-  )
-  const borderColors = item.prices.map((_, i) =>
-    i === currentIdx ? '#81c784' : 'rgba(76, 175, 80, 0.6)'
-  )
-
   if (chartInstance) {
     chartInstance.destroy()
     chartInstance = null
   }
 
   chartInstance = new Chart(chartCanvas.value, {
-    type: 'bar',
+    type: 'line',
     data: {
       labels,
       datasets: [{
         label: `${item.emoji} ${tItem(item.type)} (PLN/t)`,
         data: item.prices,
-        backgroundColor: colors,
-        borderColor: borderColors,
-        borderWidth: 1,
-        borderRadius: 4,
+        borderColor: '#4caf50',
+        backgroundColor: 'rgba(76, 175, 80, 0.08)',
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: item.prices.map((_, i) => i === currentIdx ? '#fff' : '#4caf50'),
+        pointBorderColor: item.prices.map((_, i) => i === currentIdx ? '#81c784' : '#4caf50'),
+        pointBorderWidth: item.prices.map((_, i) => i === currentIdx ? 2 : 1),
+        pointRadius: item.prices.map((_, i) => i === currentIdx ? 6 : 3),
+        pointHoverRadius: 6,
       }],
     },
     options: {
