@@ -11,6 +11,13 @@
   <div class="refresh-bar">
     <div class="container">
       <span>Ostatnie odświeżenie: <span>{{ lastRefresh || '—' }}</span></span>
+      <span v-if="localUrl" style="color:var(--text-dim)">
+        📱
+        <a :href="localUrl" target="_blank" style="color:var(--accent2); font-family:monospace;">{{ localUrl }}</a>
+        <button @click="copyAddress" style="margin-left:6px; background:none; border:none; cursor:pointer; color:var(--text-dim); font-size:12px; padding:0;">
+          {{ copied ? '✓ Skopiowano' : '⎘ Kopiuj' }}
+        </button>
+      </span>
       <span class="refresh-status">{{ refreshStatus }}</span>
     </div>
   </div>
@@ -55,7 +62,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { getConfig, getSummary, getFields, getVehicles, getWeather, getEconomy, getStorage } from '../api.js'
+import { getConfig, getSummary, getFields, getVehicles, getWeather, getEconomy, getStorage, getLocalAddress } from '../api.js'
 import OverviewTab from '../components/OverviewTab.vue'
 import FieldsTab from '../components/FieldsTab.vue'
 import VehiclesTab from '../components/VehiclesTab.vue'
@@ -79,6 +86,8 @@ const activeTab = ref('overview')
 const refreshInterval = ref(30)
 const lastRefresh = ref(null)
 const refreshStatus = ref('⏳ Ładowanie danych...')
+const localUrl = ref(null)
+const copied = ref(false)
 let timer = null
 
 const overviewData = ref(null)
@@ -119,6 +128,8 @@ onMounted(async () => {
     refreshInterval.value = config.refresh_interval || 30
   } catch {}
 
+  getLocalAddress().then(r => { localUrl.value = r.url }).catch(() => {})
+
   await Promise.all([loadOverview(), loadFields(), loadVehicles(), loadWeather(), loadPrices(), loadStorage()])
   setRefreshOk()
   scheduleRefresh()
@@ -127,6 +138,15 @@ onMounted(async () => {
 onUnmounted(() => {
   if (timer) clearTimeout(timer)
 })
+
+async function copyAddress() {
+  if (!localUrl.value) return
+  try {
+    await navigator.clipboard.writeText(localUrl.value)
+    copied.value = true
+    setTimeout(() => { copied.value = false }, 2000)
+  } catch {}
+}
 
 async function loadOverview() {
   overviewLoading.value = true
