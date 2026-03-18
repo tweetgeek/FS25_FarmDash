@@ -3,6 +3,7 @@
     <div class="container">
       <h1>🚜 FS25 Live Dashboard</h1>
       <span class="subtitle">{{ saveTitle }}</span>
+      <span v-if="version" class="version-tag">v{{ version }}</span>
       <span style="flex:1"></span>
       <div class="theme-btns">
         <button :class="['theme-btn', { active: theme === 'light' }]" @click="setTheme('light')" :title="t('ui.theme.light')">{{ t('ui.theme.light') }}</button>
@@ -110,6 +111,7 @@ const saveId = route.query.save
 
 const activeTab = usePersist('fd_activeTab', 'overview')
 const refreshInterval = ref(30)
+const version = ref(null)
 const lastRefresh = ref(null)
 const refreshStatus = ref('loading')
 const localUrl = ref(null)
@@ -166,6 +168,7 @@ onMounted(async () => {
   try {
     const config = await getConfig()
     refreshInterval.value = config.refresh_interval || 30
+    if (config.version) version.value = config.version
   } catch {}
 
   getLocalAddress().then(r => { localUrl.value = r.url }).catch(() => {})

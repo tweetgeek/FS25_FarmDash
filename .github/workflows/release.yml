@@ -13,6 +13,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set version from release tag
+        shell: bash
+        run: |
+          VERSION="${{ github.ref_name }}"
+          VERSION="${VERSION#v}"
+          printf 'VERSION = "%s"\n' "$VERSION" > api/__init__.py
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:

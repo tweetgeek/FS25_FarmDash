@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from pathlib import Path
 from api.config import read_config, write_config, get_saves_dir
+from api import VERSION
 from api.parsers.career import parse_career
 from api.parsers.farms import parse_farms
 from api.parsers.fields import parse_fields
@@ -40,7 +41,7 @@ def _is_savegame_dir(name: str) -> bool:
 
 @router.get("/config")
 def get_config():
-    return read_config()
+    return {**read_config(), "version": VERSION}
 
 
 @router.get("/local-address")

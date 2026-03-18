@@ -3,6 +3,7 @@
     <div class="container">
       <h1>🚜 FS25 Live Dashboard</h1>
       <span class="subtitle">{{ t('ui.home.subtitle') }}</span>
+      <span v-if="version" class="version-tag">v{{ version }}</span>
       <span style="flex:1"></span>
       <div class="theme-btns">
         <button :class="['theme-btn', { active: theme === 'light' }]" @click="setTheme('light')" :title="t('ui.theme.light')">{{ t('ui.theme.light') }}</button>
@@ -108,6 +109,7 @@ const router = useRouter()
 
 const fs25Path = ref('')
 const refreshInterval = ref(60)
+const version = ref(null)
 const saving = ref(false)
 const browsing = ref(false)
 const detectedPath = ref(null)
@@ -122,6 +124,7 @@ onMounted(async () => {
     const config = await getConfig()
     if (config.fs25_path) fs25Path.value = config.fs25_path
     if (config.refresh_interval) refreshInterval.value = config.refresh_interval
+    if (config.version) version.value = config.version
     if (config.fs25_path) {
       await loadSaves()
     } else {

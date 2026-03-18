@@ -196,6 +196,8 @@ export default {
       enabled: 'Aktywna',
       disabled: 'Wyłączona',
       productions: 'Produkcje',
+      inventory: 'Magazyn',
+      costsToClaim: 'Do rozliczenia',
       categories: {
         greenhouse:    '🌿 Szklarnia',
         bakery:        '🥐 Piekarnia',
