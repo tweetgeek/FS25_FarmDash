@@ -11,10 +11,9 @@
   <div class="refresh-bar">
     <div class="container">
       <span>Ostatnie odświeżenie: <span>{{ lastRefresh || '—' }}</span></span>
-      <span v-if="localUrl" style="color:var(--text-dim)">
-        📱
-        <a :href="localUrl" target="_blank" style="color:var(--accent2); font-family:monospace;">{{ localUrl }}</a>
-        <button @click="copyAddress" style="margin-left:6px; background:none; border:none; cursor:pointer; color:var(--text-dim); font-size:12px; padding:0;">
+      <span v-if="localUrl" style="color:var(--text-dim); display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+        <a :href="localUrl" target="_blank" style="color:var(--accent2); font-family:monospace; font-size:12px;">📱 {{ localUrl }}</a>
+        <button @click="copyAddress" style="background:none; border:none; cursor:pointer; color:var(--text-dim); font-size:12px; padding:0; white-space:nowrap;">
           {{ copied ? '✓ Skopiowano' : '⎘ Kopiuj' }}
         </button>
       </span>

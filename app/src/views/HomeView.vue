@@ -22,7 +22,7 @@
 
         <div class="form-group">
           <label>Ścieżka do katalogu z zapisami FS25</label>
-          <div style="display:flex; gap:8px; align-items:center;">
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
             <input
               type="text"
               v-model="fs25Path"

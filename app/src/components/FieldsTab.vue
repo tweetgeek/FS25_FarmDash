@@ -26,7 +26,7 @@
         </button>
       </div>
 
-      <div class="card" style="padding:0; overflow:hidden">
+      <div class="card" style="padding:0; overflow-x:auto">
         <table class="fields-table">
           <thead>
             <tr>
@@ -46,7 +46,7 @@
                 <strong>{{ f.id }}</strong>
                 <span v-if="f.owned" style="margin-left:4px; font-size:11px;" title="Twoje pole">🏠</span>
               </td>
-              <td>{{ f.fruitEmoji }} {{ f.fruitType }}</td>
+              <td>{{ f.fruitEmoji }} {{ f.fruitName }}</td>
               <td>
                 <span :class="['status-badge', 'status-' + f.status]">
                   {{ statusLabel(f.status) }}

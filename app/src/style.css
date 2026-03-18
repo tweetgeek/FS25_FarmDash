@@ -477,13 +477,63 @@ header .subtitle {
   gap: 16px;
 }
 
-/* Responsive */
-@media (max-width: 700px) {
+/* ── Tabs – horizontal scroll on small screens ───────────────────────── */
+.tabs {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  flex-wrap: nowrap;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab-btn { white-space: nowrap; flex-shrink: 0; }
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+
+/* Tablet (≤ 768px) */
+@media (max-width: 768px) {
   .summary-cols { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+
+  .weather-card { flex-direction: column; align-items: flex-start; gap: 12px; }
+
+  .refresh-bar .container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
 }
 
+/* Phone (≤ 600px) */
 @media (max-width: 600px) {
+  .container { padding: 0 12px; }
+
+  /* Header */
+  header .container { flex-wrap: wrap; gap: 8px; }
+  header h1 { font-size: 16px; }
+  header .subtitle { display: none; }
+
+  /* Tabs */
+  .tab-btn { padding: 10px 12px; font-size: 13px; }
+
+  /* Cards */
+  .card { padding: 14px; }
+  .page-content { padding: 16px 0; }
+
+  /* Buttons & inputs – bigger tap targets */
+  .btn { padding: 11px 18px; }
+  .form-group input[type="text"],
+  .form-group input[type="number"] { padding: 10px 12px; }
+
+  /* Grids */
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .vehicles-grid { grid-template-columns: 1fr; }
   .saves-grid { grid-template-columns: 1fr; }
+  .storage-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+
+  /* Forecast */
+  .forecast-item { min-width: 60px; padding: 8px 10px; }
+
+  /* Fields summary wrap */
+  .fields-summary { gap: 8px; }
+  .field-badge { font-size: 12px; }
 }

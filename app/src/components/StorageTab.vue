@@ -31,7 +31,7 @@
       </div>
 
       <!-- Crops with pricing table -->
-      <div v-if="pricedItems.length > 0" class="card" style="padding:0; overflow:hidden">
+      <div v-if="pricedItems.length > 0" class="card" style="padding:0; overflow-x:auto">
         <div style="padding:16px 20px 12px; border-bottom:1px solid var(--border)">
           <h2 style="margin-bottom:0">🌾 Plony</h2>
         </div>
