@@ -4,6 +4,11 @@
       <h1>🚜 FS25 Live Dashboard</h1>
       <span class="subtitle">{{ t('ui.home.subtitle') }}</span>
       <span style="flex:1"></span>
+      <div class="theme-btns">
+        <button :class="['theme-btn', { active: theme === 'light' }]" @click="setTheme('light')" :title="t('ui.theme.light')">{{ t('ui.theme.light') }}</button>
+        <button :class="['theme-btn', { active: theme === 'dark' }]" @click="setTheme('dark')" :title="t('ui.theme.dark')">{{ t('ui.theme.dark') }}</button>
+        <button :class="['theme-btn', { active: theme === 'system' }]" @click="setTheme('system')" :title="t('ui.theme.system')">{{ t('ui.theme.system') }}</button>
+      </div>
       <button class="btn btn-secondary" style="font-size:13px; padding:6px 14px;" @click="toggleLocale">{{ t('ui.lang') }}</button>
     </div>
   </header>
@@ -93,14 +98,16 @@ import { useRouter } from 'vue-router'
 import { getConfig, saveConfig, getSaves, browseFolder, detectSavesPath } from '../api.js'
 import { formatMoney } from '../utils.js'
 import { useI18n } from '../i18n/index.js'
+import { useTheme } from '../theme.js'
 
 const { t, locale, setLocale } = useI18n()
+const { theme, setTheme } = useTheme()
 function toggleLocale() { setLocale(locale.value === 'pl' ? 'en' : 'pl') }
 
 const router = useRouter()
 
 const fs25Path = ref('')
-const refreshInterval = ref(30)
+const refreshInterval = ref(60)
 const saving = ref(false)
 const browsing = ref(false)
 const detectedPath = ref(null)
@@ -147,7 +154,7 @@ async function onSaveConfig() {
   saving.value = true
   alert.value = null
   try {
-    await saveConfig({ fs25_path: fs25Path.value.trim(), refresh_interval: refreshInterval.value || 30 })
+    await saveConfig({ fs25_path: fs25Path.value.trim(), refresh_interval: refreshInterval.value || 60 })
     alert.value = { type: 'success', message: 'Konfiguracja zapisana pomyślnie.' }
     await loadSaves()
   } catch (e) {

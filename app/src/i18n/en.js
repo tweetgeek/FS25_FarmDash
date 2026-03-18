@@ -2,6 +2,7 @@ export default {
   ui: {
     backButton: '← Back',
     lang: '🇵🇱 PL',
+    theme: { light: '☀️', dark: '🌙', system: '💻' },
 
     home: {
       subtitle: 'Farming Simulator 25 — Monitoring Dashboard',
@@ -28,6 +29,7 @@ export default {
       weather: '🌤️ Weather',
       prices: '💰 Market prices',
       storage: '🏪 Storage',
+      precision: '🌱 Precision Farming',
     },
 
     overview: {
@@ -124,6 +126,45 @@ export default {
       trendDown: '▼ Falling',
       trendFlat: '— Stable',
       currentMarker: '← current',
+    },
+
+    precision: {
+      loading: 'Loading Precision Farming data...',
+      notAvailable: 'No Precision Farming data — install the mod and run a soil analysis.',
+      summaryTitle: '🌱 PF Summary',
+      ownedFields: 'My fields',
+      fieldsSampled: 'Fields with soil sample',
+      totalYield: 'Total yield',
+      totalRevenue: 'Revenue',
+      totalCosts: 'Operating costs',
+      tableTitle: '📊 Field data',
+      filterOwned: '🏠 My fields',
+      filterAll: '🌍 All',
+      colField: 'Field',
+      colSoilSample: 'Soil sample',
+      colNitrogen: 'Nitrogen (N)',
+      colPH: 'pH balance',
+      colTillage: 'Tillage',
+      colHerbicide: 'Herbicide',
+      colYield: 'Yield (total)',
+      colRevenue: 'Revenue',
+      colCosts: 'Costs',
+      noSample: 'No sample',
+      sampled: 'Sampled',
+      nBalanceGood: 'Optimal',
+      nBalanceLow: 'Deficiency',
+      nBalanceHigh: 'Excess',
+      phBalanceGood: 'Optimal',
+      phBalanceLow: 'Deficiency',
+      tillageFlat: 'Shallow',
+      tillageDeep: 'Deep',
+      tillageDirect: 'Direct sow',
+      tillageNone: 'Not worked',
+      herbSpot: 'Spot spray',
+      herbFull: 'Full spray',
+      herbMech: 'Mechanical',
+      herbNone: 'No data',
+      noData: '—',
     },
 
     storage: {
