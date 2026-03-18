@@ -1,0 +1,49 @@
+name: Build Windows Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Build Vue frontend
+        working-directory: app
+        run: |
+          npm ci
+          npm run build
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build Windows executable
+        run: |
+          pyinstaller --onefile --name FarmDash --noconsole `
+            --add-data "api\static;api\static" `
+            --collect-all uvicorn `
+            --collect-all starlette `
+            --hidden-import fastapi `
+            --hidden-import anyio `
+            --hidden-import anyio._backends._asyncio `
+            main.py
+
+      - name: Upload FarmDash.exe to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/FarmDash.exe
