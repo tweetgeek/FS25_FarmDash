@@ -85,6 +85,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useI18n } from '../i18n/index.js'
+import { usePersist } from '../useUIState.js'
 
 const { t, tFruit } = useI18n()
 
@@ -107,7 +108,7 @@ const FILTERS = [
   { value: 'other', label: () => t('ui.fields.filterOther'), count: () => otherFields.value.length },
 ]
 
-const filter = ref('owned')
+const filter = usePersist('fd_fieldsFilter', 'owned')
 watch(() => props.data, (val) => {
   if (val && ownedFields.value.length === 0) filter.value = 'all'
 }, { immediate: true })

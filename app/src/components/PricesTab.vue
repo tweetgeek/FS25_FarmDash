@@ -93,6 +93,7 @@
 import { ref, watch, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import { Chart, LineController, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Filler } from 'chart.js'
 import { useI18n } from '../i18n/index.js'
+import { usePersist } from '../useUIState.js'
 
 Chart.register(LineController, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Filler)
 
@@ -111,7 +112,7 @@ const props = defineProps({
 
 const chartCanvas = ref(null)
 const selectedItem = ref(null)
-const activeCategory = ref(null)
+const activeCategory = usePersist('fd_pricesCategory', null)
 let chartInstance = null
 
 const allItems = computed(() => props.data?.items || [])
@@ -135,8 +136,8 @@ function countByCategory(key) {
   return allItems.value.filter(i => i.category === key).length
 }
 
-const sortCol = ref('currentPrice')
-const sortDir = ref(-1)
+const sortCol = usePersist('fd_pricesSortCol', 'currentPrice')
+const sortDir = usePersist('fd_pricesSortDir', -1)
 
 const SORT_KEYS = {
   name:         i => tItem(i.type).toLowerCase(),

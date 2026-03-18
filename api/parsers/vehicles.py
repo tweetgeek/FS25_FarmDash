@@ -43,6 +43,9 @@ def parse_vehicles(save_path: Path) -> dict:
 
         damage = 0.0
         wearable = v_el.find("wearable")
+        if wearable is None and operating_time == 0:
+            # Not a real vehicle/implement — likely a seed pallet, fertilizer bag, etc.
+            continue
         if wearable is not None:
             damage = float(wearable.get("damage", 0))
 
@@ -83,24 +86,40 @@ def parse_vehicles(save_path: Path) -> dict:
     return {"vehicles": vehicles, "total": len(vehicles)}
 
 
+# Generic/meaningless path segment names that shouldn't be used as vehicle names
+_BAD_SEGMENTS = {
+    'xml', 'vehicles', 'data', 'objects', 'mods', 'mod', 'pdlc', 'dlc',
+    'content', 'base', 'res', 'shared', 'assets', 'misc',
+}
+
+
 def _extract_name(filename: str) -> str:
     if not filename:
-        return "Nieznany pojazd"
+        return "Unknown"
 
-    # Remove path prefix like $pdlcdir$... or data/vehicles/...
     filename = filename.replace("$pdlcdir$", "").replace("$moddir$", "")
+    parts = [p for p in filename.replace("\\", "/").split("/") if p]
 
-    # Get last path segment without extension
-    parts = filename.replace("\\", "/").split("/")
-    # Take the second-to-last part (folder name is usually vehicle name)
+    if not parts:
+        return "Unknown"
+
+    # Build candidate list: folder (parts[-2]), filename stem, parent folder (parts[-3])
+    candidates = []
     if len(parts) >= 2:
-        name = parts[-2]
-    else:
-        name = parts[-1].replace(".xml", "")
+        candidates.append(parts[-2])
+    candidates.append(parts[-1].replace(".xml", "").replace(".i3d", ""))
+    if len(parts) >= 3:
+        candidates.append(parts[-3])
 
-    # Convert camelCase/underscores to readable
+    # Pick first candidate that isn't a generic path segment
+    name = next(
+        (c for c in candidates if c.lower() not in _BAD_SEGMENTS and len(c) > 2),
+        candidates[0] if candidates else "Unknown",
+    )
+
+    # Convert camelCase / underscores to readable
     name = re.sub(r'([a-z])([A-Z])', r'\1 \2', name)
     name = name.replace("_", " ")
     name = " ".join(word.capitalize() for word in name.split())
 
-    return name or "Pojazd"
+    return name or "Unknown"

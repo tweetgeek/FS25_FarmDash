@@ -167,6 +167,23 @@ export default {
       noData: '—',
     },
 
+    dashboard: {
+      lastRefresh: 'Ostatnie odświeżenie',
+      copy: '⎘ Kopiuj',
+      copied: '✓ Skopiowano',
+      refreshIn: 'Odświeżenie za',
+      loading: '⏳ Ładowanie danych...',
+      refreshing: '🔄 Odświeżanie...',
+      loadingTitle: 'Ładowanie...',
+      errorOverview: 'Błąd ładowania przeglądu',
+      errorFields: 'Błąd ładowania pól',
+      errorVehicles: 'Błąd ładowania pojazdów',
+      errorWeather: 'Błąd ładowania pogody',
+      errorPrices: 'Błąd ładowania cen',
+      errorStorage: 'Błąd ładowania magazynu',
+      errorPrecision: 'Błąd ładowania Precision Farming',
+    },
+
     storage: {
       loading: 'Ładowanie magazynu...',
       empty: 'Brak zasobów w magazynach (pojazdy, bele, silosy).',

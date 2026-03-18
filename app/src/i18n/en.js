@@ -167,6 +167,23 @@ export default {
       noData: '—',
     },
 
+    dashboard: {
+      lastRefresh: 'Last refresh',
+      copy: '⎘ Copy',
+      copied: '✓ Copied',
+      refreshIn: 'Refresh in',
+      loading: '⏳ Loading data...',
+      refreshing: '🔄 Refreshing...',
+      loadingTitle: 'Loading...',
+      errorOverview: 'Error loading overview',
+      errorFields: 'Error loading fields',
+      errorVehicles: 'Error loading vehicles',
+      errorWeather: 'Error loading weather',
+      errorPrices: 'Error loading prices',
+      errorStorage: 'Error loading storage',
+      errorPrecision: 'Error loading Precision Farming',
+    },
+
     storage: {
       loading: 'Loading storage...',
       empty: 'No resources in storage (vehicles, bales, silos).',
