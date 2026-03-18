@@ -1,35 +1,35 @@
 <template>
   <div>
-    <div v-if="loading" class="loading"><span class="spinner"></span> Ładowanie pojazdów...</div>
+    <div v-if="loading" class="loading"><span class="spinner"></span> {{ t('ui.vehicles.loading') }}</div>
     <div v-else-if="error" class="alert alert-error">{{ error }}</div>
     <div v-else-if="data">
       <div style="margin-bottom:12px; color:var(--text-dim); font-size:13px">
-        Łącznie pojazdów: {{ vehicles.length }}
+        {{ t('ui.vehicles.total') }}: {{ vehicles.length }}
       </div>
       <div class="vehicles-grid">
         <div v-for="v in vehicles" :key="v.filename" class="vehicle-card">
           <div class="vehicle-name" :title="v.filename">{{ v.name }}</div>
           <div class="vehicle-stats">
             <div>
-              <div style="color:var(--text-dim)">Zużycie</div>
+              <div style="color:var(--text-dim)">{{ t('ui.vehicles.wear') }}</div>
               <div class="vehicle-stat-val" :style="{ color: dmgColor(v.damage) }">{{ v.damage }}%</div>
               <div class="progress-bar">
                 <div class="progress-fill progress-damage" :style="{ width: v.damage + '%' }"></div>
               </div>
             </div>
             <div>
-              <div style="color:var(--text-dim)">Brud</div>
+              <div style="color:var(--text-dim)">{{ t('ui.vehicles.dirt') }}</div>
               <div class="vehicle-stat-val">{{ v.dirt }}%</div>
               <div class="progress-bar">
                 <div class="progress-fill progress-dirt" :style="{ width: v.dirt + '%' }"></div>
               </div>
             </div>
             <div>
-              <div style="color:var(--text-dim)">Czas pracy</div>
+              <div style="color:var(--text-dim)">{{ t('ui.vehicles.workTime') }}</div>
               <div class="vehicle-stat-val">{{ v.operatingTime }}h</div>
             </div>
             <div>
-              <div style="color:var(--text-dim)">Wiek</div>
+              <div style="color:var(--text-dim)">{{ t('ui.vehicles.age') }}</div>
               <div class="vehicle-stat-val">{{ v.age }}m</div>
             </div>
           </div>
@@ -54,6 +54,9 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from '../i18n/index.js'
+
+const { t } = useI18n()
 
 const props = defineProps({
   data: Object,

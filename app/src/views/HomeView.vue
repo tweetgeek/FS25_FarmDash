@@ -2,7 +2,9 @@
   <header>
     <div class="container">
       <h1>🚜 FS25 Live Dashboard</h1>
-      <span class="subtitle">Farming Simulator 25 — Panel monitorowania</span>
+      <span class="subtitle">{{ t('ui.home.subtitle') }}</span>
+      <span style="flex:1"></span>
+      <button class="btn btn-secondary" style="font-size:13px; padding:6px 14px;" @click="toggleLocale">{{ t('ui.lang') }}</button>
     </div>
   </header>
 
@@ -10,36 +12,36 @@
     <div class="container">
 
       <div class="card">
-        <h2>⚙️ Konfiguracja</h2>
+        <h2>{{ t('ui.home.config') }}</h2>
         <div v-if="alert" :class="['alert', 'alert-' + alert.type]">{{ alert.message }}</div>
 
         <div v-if="detectedPath" class="alert alert-info" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-          <span>📁 Wykryto katalog z zapisami: <strong>{{ detectedPath }}</strong></span>
+          <span>{{ t('ui.home.detectedPath') }}: <strong>{{ detectedPath }}</strong></span>
           <button class="btn" style="flex-shrink:0; padding:5px 14px; font-size:13px;" @click="fs25Path = detectedPath; detectedPath = null">
-            Użyj
+            {{ t('ui.home.useButton') }}
           </button>
         </div>
 
         <div class="form-group">
-          <label>Ścieżka do katalogu z zapisami FS25</label>
+          <label>{{ t('ui.home.pathLabel') }}</label>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
             <input
               type="text"
               v-model="fs25Path"
-              placeholder="np. C:\Users\Użytkownik\Documents\My Games\FarmingSimulator2025"
+              :placeholder="t('ui.home.pathPlaceholder')"
               style="flex:1"
             />
             <button class="btn btn-secondary" :disabled="browsing" @click="onBrowse" style="white-space:nowrap; flex-shrink:0;">
-              {{ browsing ? '...' : '📁 Przeglądaj' }}
+              {{ browsing ? t('ui.home.browsing') : t('ui.home.browseButton') }}
             </button>
           </div>
           <div style="margin-top:4px; font-size:12px; color:var(--text-dim)">
-            Wybierz katalog zawierający foldery savegame1, savegame2...
+            {{ t('ui.home.pathHint') }}
           </div>
         </div>
 
         <div class="form-group">
-          <label>Interwał odświeżania (sekundy)</label>
+          <label>{{ t('ui.home.intervalLabel') }}</label>
           <input
             type="number"
             v-model.number="refreshInterval"
@@ -50,18 +52,18 @@
         </div>
 
         <button class="btn" :disabled="saving" @click="onSaveConfig">
-          {{ saving ? 'Zapisywanie...' : 'Zapisz konfigurację' }}
+          {{ saving ? t('ui.home.savingButton') : t('ui.home.saveButton') }}
         </button>
       </div>
 
       <div v-if="savesVisible" class="card">
-        <h2>💾 Wybierz zapis gry</h2>
+        <h2>{{ t('ui.home.savesTitle') }}</h2>
         <div v-if="savesAlert" :class="['alert', 'alert-' + savesAlert.type]">{{ savesAlert.message }}</div>
         <div v-if="savesLoading" class="loading">
-          <span class="spinner"></span> Ładowanie zapisów...
+          <span class="spinner"></span> {{ t('ui.home.savesLoading') }}
         </div>
         <div v-else-if="saves.length === 0 && !savesAlert" class="alert alert-info">
-          Nie znaleziono żadnych zapisów gry w podanej ścieżce.
+          {{ t('ui.home.savesEmpty') }}
         </div>
         <div v-else class="saves-grid">
           <div
@@ -90,6 +92,10 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getConfig, saveConfig, getSaves, browseFolder, detectSavesPath } from '../api.js'
 import { formatMoney } from '../utils.js'
+import { useI18n } from '../i18n/index.js'
+
+const { t, locale, setLocale } = useI18n()
+function toggleLocale() { setLocale(locale.value === 'pl' ? 'en' : 'pl') }
 
 const router = useRouter()
 

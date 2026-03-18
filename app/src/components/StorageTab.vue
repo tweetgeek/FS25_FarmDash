@@ -1,27 +1,27 @@
 <template>
   <div>
-    <div v-if="loading" class="loading"><span class="spinner"></span> Ładowanie magazynu...</div>
+    <div v-if="loading" class="loading"><span class="spinner"></span> {{ t('ui.storage.loading') }}</div>
     <div v-else-if="error" class="alert alert-error">{{ error }}</div>
     <div v-else-if="data">
 
       <div v-if="data.items.length === 0" class="alert alert-info">
-        Brak zasobów w magazynach (pojazdy, bele, silosy).
+        {{ t('ui.storage.empty') }}
       </div>
 
       <!-- Summary card (only when priced crops exist) -->
       <div v-if="totalCurrentValue > 0" class="card summary-card">
-        <h2>💹 Wartość plonów</h2>
+        <h2>{{ t('ui.storage.valueTitle') }}</h2>
         <div class="summary-grid">
           <div class="summary-item">
-            <div class="summary-label">Aktualnie</div>
+            <div class="summary-label">{{ t('ui.storage.valueNow') }}</div>
             <div class="summary-value">{{ formatMoney(totalCurrentValue) }}</div>
           </div>
           <div class="summary-item">
-            <div class="summary-label">Przy max cenach</div>
+            <div class="summary-label">{{ t('ui.storage.valueMax') }}</div>
             <div class="summary-value accent2">{{ formatMoney(totalMaxValue) }}</div>
           </div>
           <div class="summary-item">
-            <div class="summary-label">Potencjalny zysk</div>
+            <div class="summary-label">{{ t('ui.storage.potentialGain') }}</div>
             <div class="summary-value gain">
               +{{ formatMoney(totalMaxValue - totalCurrentValue) }}
               <span class="gain-pct">(+{{ gainPct }}%)</span>
@@ -33,23 +33,23 @@
       <!-- Crops with pricing table -->
       <div v-if="pricedItems.length > 0" class="card" style="padding:0; overflow-x:auto">
         <div style="padding:16px 20px 12px; border-bottom:1px solid var(--border)">
-          <h2 style="margin-bottom:0">🌾 Plony</h2>
+          <h2 style="margin-bottom:0">{{ t('ui.storage.cropsTitle') }}</h2>
         </div>
         <table class="fields-table">
           <thead>
             <tr>
-              <th>Surowiec</th>
-              <th>Ilość</th>
-              <th style="color:var(--text)">Cena teraz</th>
-              <th style="color:var(--accent)">Wartość teraz</th>
-              <th style="color:var(--text-dim)">Cena max (kiedy)</th>
-              <th style="color:var(--accent2)">Wartość przy max</th>
-              <th>Zysk</th>
+              <th>{{ t('ui.storage.colItem') }}</th>
+              <th>{{ t('ui.storage.colAmount') }}</th>
+              <th style="color:var(--text)">{{ t('ui.storage.colPriceNow') }}</th>
+              <th style="color:var(--accent)">{{ t('ui.storage.colValueNow') }}</th>
+              <th style="color:var(--text-dim)">{{ t('ui.storage.colPriceMax') }}</th>
+              <th style="color:var(--accent2)">{{ t('ui.storage.colValueMax') }}</th>
+              <th>{{ t('ui.storage.colGain') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="row in pricedItems" :key="row.item.type">
-              <td><strong>{{ row.item.emoji }} {{ row.item.name }}</strong></td>
+              <td><strong>{{ row.item.emoji }} {{ tItem(row.item.type) }}</strong></td>
               <td>{{ formatAmount(row.item.level) }}</td>
               <td>{{ row.price.currentPrice }} PLN/t</td>
               <td style="color:var(--accent); font-weight:600">{{ formatMoney(row.currentValue) }}</td>
@@ -70,12 +70,12 @@
       <!-- Other categories (cards) -->
       <template v-for="(group, catKey) in otherGroups" :key="catKey">
         <div class="card">
-          <h2>{{ CATEGORY_LABELS[catKey] }}</h2>
+          <h2>{{ t('categories.' + catKey + '.emoji') }} {{ t('categories.' + catKey + '.label') }}</h2>
           <div class="storage-grid">
             <div v-for="item in group" :key="item.type" class="storage-item">
               <div class="storage-header">
                 <span class="storage-emoji">{{ item.emoji }}</span>
-                <span class="storage-name">{{ item.name }}</span>
+                <span class="storage-name">{{ tItem(item.type) }}</span>
                 <span class="storage-amount">{{ formatAmount(item.level) }}</span>
               </div>
               <div class="progress-bar" style="height:6px; margin-top:6px">
@@ -97,6 +97,9 @@
 <script setup>
 import { computed } from 'vue'
 import { formatMoney } from '../utils.js'
+import { useI18n } from '../i18n/index.js'
+
+const { t, tItem } = useI18n()
 
 const props = defineProps({
   data: Object,
@@ -106,23 +109,17 @@ const props = defineProps({
 })
 
 const CATEGORY_ORDER = ['feed', 'products', 'supplies', 'manure', 'other']
-const CATEGORY_LABELS = {
-  feed: '🌿 Pasza i materiał organiczny',
-  products: '📦 Produkty',
-  supplies: '🧪 Środki produkcji',
-  manure: '💧 Nawozy naturalne',
-  other: '📁 Inne',
-}
 
 // Build a price lookup map keyed by fill type
 const priceMap = computed(() => {
   const map = {}
   if (!props.pricesData?.items) return map
+  const periods = props.pricesData.periods || []
   for (const crop of props.pricesData.items) {
     map[crop.type] = {
       currentPrice: crop.currentPrice,
       maxPrice: crop.maxPrice,
-      maxPeriodLabel: props.pricesData.periodLabels?.[crop.maxPeriodIdx] ?? '',
+      maxPeriodLabel: periods[crop.maxPeriodIdx] ? t('periods.' + periods[crop.maxPeriodIdx]) : '',
     }
   }
   return map

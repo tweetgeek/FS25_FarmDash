@@ -8,28 +8,6 @@ PERIODS = [
     'EARLY_WINTER', 'MID_WINTER', 'LATE_WINTER',
 ]
 
-PERIOD_LABELS_PL = [
-    'Pocz. wiosny', 'Śr. wiosny', 'Kon. wiosny',
-    'Pocz. lata', 'Śr. lata', 'Kon. lata',
-    'Pocz. jesieni', 'Śr. jesieni', 'Kon. jesieni',
-    'Pocz. zimy', 'Śr. zimy', 'Kon. zimy',
-]
-
-# category → (Polish label, emoji)
-CATEGORIES: dict[str, tuple[str, str]] = {
-    'crops':        ('Uprawy',              '🌾'),
-    'processed':    ('Produkty przetworzone','🏭'),
-    'dairy':        ('Nabiał',              '🥛'),
-    'animals':      ('Zwierzęta',           '🐄'),
-    'fish':         ('Ryby i owoce morza',  '🐟'),
-    'forestry':     ('Leśnictwo',           '🌲'),
-    'bales':        ('Bele',                '🟫'),
-    'byproducts':   ('Produkty uboczne',    '♻️'),
-    'inputs':       ('Środki produkcji',    '🧴'),
-    'construction': ('Materiały budowlane', '🧱'),
-    'other':        ('Inne',                '📦'),
-}
-
 # fill_type → (Polish name, emoji, category)
 ITEM_INFO: dict[str, tuple[str, str, str]] = {
     # ── Uprawy ──────────────────────────────────────────────────────────────
@@ -232,10 +210,6 @@ ITEM_INFO: dict[str, tuple[str, str, str]] = {
 }
 
 
-def _fallback_name(fill_type: str) -> str:
-    """Formats SNAKE_CASE as Title Case for unknown types."""
-    return fill_type.replace('_', ' ').title()
-
 
 def _get_current_period_idx(save_path: Path) -> int:
     env_file = save_path / "environment.xml"
@@ -255,7 +229,7 @@ def _get_current_period_idx(save_path: Path) -> int:
 def parse_economy(save_path: Path) -> dict:
     xml_file = save_path / "economy.xml"
     if not xml_file.exists():
-        return {"items": [], "currentPeriodIdx": 0, "periodLabels": PERIOD_LABELS_PL}
+        return {"items": [], "currentPeriodIdx": 0, "periods": PERIODS}
 
     current_period_idx = _get_current_period_idx(save_path)
 
@@ -263,11 +237,11 @@ def parse_economy(save_path: Path) -> dict:
         tree = ET.parse(xml_file)
         root = tree.getroot()
     except Exception:
-        return {"items": [], "currentPeriodIdx": current_period_idx, "periodLabels": PERIOD_LABELS_PL}
+        return {"items": [], "currentPeriodIdx": current_period_idx, "periods": PERIODS}
 
     fill_types_el = root.find("fillTypes")
     if fill_types_el is None:
-        return {"items": [], "currentPeriodIdx": current_period_idx, "periodLabels": PERIOD_LABELS_PL}
+        return {"items": [], "currentPeriodIdx": current_period_idx, "periods": PERIODS}
 
     items = []
     for ft_el in fill_types_el.findall("fillType"):
@@ -288,7 +262,6 @@ def parse_economy(save_path: Path) -> dict:
             continue
 
         info = ITEM_INFO.get(fill_type)
-        name     = info[0] if info else _fallback_name(fill_type)
         emoji    = info[1] if info else '📦'
         category = info[2] if info else 'other'
 
@@ -307,7 +280,6 @@ def parse_economy(save_path: Path) -> dict:
 
         items.append({
             "type":         fill_type,
-            "name":         name,
             "emoji":        emoji,
             "category":     category,
             "prices":       prices,
@@ -324,7 +296,5 @@ def parse_economy(save_path: Path) -> dict:
     return {
         "items": items,
         "currentPeriodIdx": current_period_idx,
-        "currentPeriodLabel": PERIOD_LABELS_PL[current_period_idx],
-        "periodLabels": PERIOD_LABELS_PL,
-        "categories": CATEGORIES,
+        "periods": PERIODS,
     }

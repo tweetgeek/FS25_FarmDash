@@ -1,22 +1,22 @@
 <template>
   <div>
-    <div v-if="loading" class="loading"><span class="spinner"></span> Ładowanie pogody...</div>
+    <div v-if="loading" class="loading"><span class="spinner"></span> {{ t('ui.weather.loading') }}</div>
     <div v-else-if="error" class="alert alert-error">{{ error }}</div>
     <div v-else-if="data">
       <div class="weather-card">
         <div class="weather-icon">{{ data.currentWeatherIcon || '🌤️' }}</div>
         <div class="weather-info">
-          <div class="weather-type">{{ weatherName(data.currentWeather) }}</div>
+          <div class="weather-type">{{ t('weather.' + data.currentWeather) }}</div>
           <div class="weather-details">
-            Dzień {{ data.currentDay || '—' }} • Godzina {{ data.dayTime || '—' }}
-            <template v-if="data.wetness > 0"> • Wilgotność gruntu: {{ data.wetness }}%</template>
-            <template v-if="data.snowHeight > 0"> • Śnieg: {{ data.snowHeight }}m</template>
+            {{ t('ui.weather.day') }} {{ data.currentDay || '—' }} • {{ t('ui.weather.hour') }} {{ data.dayTime || '—' }}
+            <template v-if="data.wetness > 0"> • {{ t('ui.weather.groundWetness') }}: {{ data.wetness }}%</template>
+            <template v-if="data.snowHeight > 0"> • {{ t('ui.weather.snow') }}: {{ data.snowHeight }}m</template>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <h2>📅 Prognoza pogody</h2>
+        <h2>{{ t('ui.weather.forecast') }}</h2>
         <div class="forecast-list">
           <div
             v-for="day in forecastDays"
@@ -25,9 +25,9 @@
             :style="day.day === data.currentDay ? 'border:1px solid var(--accent)' : ''"
           >
             <span class="forecast-icon">{{ day.icon }}</span>
-            <div class="forecast-day">Dzień {{ day.day }}</div>
-            <div class="forecast-type">{{ weatherName(day.dominant) }}</div>
-            <div style="font-size:10px; color:var(--text-dim)">{{ day.season }}</div>
+            <div class="forecast-day">{{ t('ui.weather.day') }} {{ day.day }}</div>
+            <div class="forecast-type">{{ t('weather.' + day.dominant) }}</div>
+            <div style="font-size:10px; color:var(--text-dim)">{{ t('seasons.' + day.season) }}</div>
           </div>
         </div>
       </div>
@@ -37,21 +37,15 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from '../i18n/index.js'
+
+const { t } = useI18n()
 
 const props = defineProps({
   data: Object,
   loading: Boolean,
   error: String,
 })
-
-const WEATHER_NAMES = {
-  SUN: 'Słonecznie', CLOUDY: 'Zachmurzenie', RAIN: 'Deszcz',
-  HAIL: 'Grad', SNOW: 'Śnieg', THUNDERSTORM: 'Burza', FOG: 'Mgła',
-}
-
-function weatherName(type) {
-  return WEATHER_NAMES[type] || type || '—'
-}
 
 const forecastDays = computed(() => {
   const forecast = props.data?.forecast || []
@@ -70,7 +64,7 @@ const forecastDays = computed(() => {
       entries.forEach(e => { counts[e.typeName] = (counts[e.typeName] || 0) + e.durationSec })
       const dominant = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0]
       const icon = entries.find(e => e.typeName === dominant)?.icon || '🌤️'
-      return { day, dominant, icon, season: entries[0]?.seasonPl || '' }
+      return { day, dominant, icon, season: entries[0]?.season || '' }
     })
 })
 </script>
