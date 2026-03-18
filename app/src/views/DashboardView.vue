@@ -4,7 +4,8 @@
       <h1>🚜 FS25 Live Dashboard</h1>
       <span class="subtitle">{{ saveTitle }}</span>
       <span style="flex:1"></span>
-      <RouterLink to="/" class="btn btn-secondary" style="font-size:13px; padding:6px 14px;">← Wróć</RouterLink>
+      <button class="btn btn-secondary" style="font-size:13px; padding:6px 14px;" @click="toggleLocale">{{ t('ui.lang') }}</button>
+      <RouterLink to="/" class="btn btn-secondary" style="font-size:13px; padding:6px 14px;">{{ t('ui.backButton') }}</RouterLink>
     </div>
   </header>
 
@@ -31,7 +32,7 @@
           :class="['tab-btn', { active: activeTab === tab.id }]"
           @click="activeTab = tab.id"
         >
-          {{ tab.label }}
+          {{ t('ui.tabs.' + tab.id) }}
         </button>
       </div>
 
@@ -62,6 +63,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getConfig, getSummary, getFields, getVehicles, getWeather, getEconomy, getStorage, getLocalAddress } from '../api.js'
+import { useI18n } from '../i18n/index.js'
 import OverviewTab from '../components/OverviewTab.vue'
 import FieldsTab from '../components/FieldsTab.vue'
 import VehiclesTab from '../components/VehiclesTab.vue'
@@ -69,13 +71,16 @@ import WeatherTab from '../components/WeatherTab.vue'
 import PricesTab from '../components/PricesTab.vue'
 import StorageTab from '../components/StorageTab.vue'
 
+const { t, locale, setLocale } = useI18n()
+function toggleLocale() { setLocale(locale.value === 'pl' ? 'en' : 'pl') }
+
 const TABS = [
-  { id: 'overview', label: '📊 Przegląd' },
-  { id: 'fields', label: '🌾 Pola' },
-  { id: 'vehicles', label: '🚜 Pojazdy' },
-  { id: 'weather', label: '🌤️ Pogoda' },
-  { id: 'prices', label: '💰 Ceny skupu' },
-  { id: 'storage', label: '🏪 Magazyn' },
+  { id: 'overview' },
+  { id: 'fields' },
+  { id: 'vehicles' },
+  { id: 'weather' },
+  { id: 'prices' },
+  { id: 'storage' },
 ]
 
 const route = useRoute()

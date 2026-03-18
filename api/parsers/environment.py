@@ -11,13 +11,6 @@ WEATHER_ICONS = {
     "FOG": "🌫️",
 }
 
-SEASON_PL = {
-    "SPRING": "Wiosna",
-    "SUMMER": "Lato",
-    "AUTUMN": "Jesień",
-    "WINTER": "Zima",
-}
-
 
 def parse_environment(save_path: Path) -> dict:
     xml_file = save_path / "environment.xml"
@@ -81,7 +74,6 @@ def parse_environment(save_path: Path) -> dict:
                         "typeName": type_name,
                         "icon": WEATHER_ICONS.get(type_name, "🌤️"),
                         "season": season,
-                        "seasonPl": SEASON_PL.get(season, season),
                         "startDayTimeSec": start_day_time_sec,
                     }
 
@@ -90,7 +82,6 @@ def parse_environment(save_path: Path) -> dict:
                     "typeName": type_name,
                     "icon": WEATHER_ICONS.get(type_name, "🌤️"),
                     "season": season,
-                    "seasonPl": SEASON_PL.get(season, season),
                     "startDayTimeSec": start_day_time_sec,
                     "durationSec": duration_ms / 1000,
                 })

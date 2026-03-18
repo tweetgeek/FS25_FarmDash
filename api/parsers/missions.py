@@ -1,20 +1,6 @@
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-MISSION_TYPE_PL = {
-    "fertilizeMission": "Nawożenie",
-    "harvestMission": "Żniwa",
-    "baleMission": "Belowanie",
-    "sowMission": "Siew",
-    "plowMission": "Orka",
-    "cultivateMission": "Kultywacja",
-    "treeTransportMission": "Transport drewna",
-    "deadwoodMission": "Usuń martwe drzewo",
-    "destructibleRockMission": "Usuń skały",
-    "mowMission": "Koszenie",
-    "wrapMission": "Owijanie beli",
-}
-
 
 def parse_missions(save_path: Path) -> dict:
     xml_file = save_path / "missions.xml"
@@ -57,7 +43,6 @@ def parse_missions(save_path: Path) -> dict:
         missions.append({
             "id": unique_id[:16] if unique_id else "",
             "type": tag,
-            "typePl": MISSION_TYPE_PL.get(tag, tag),
             "status": status,
             "finishState": finish_state,
             "reward": reward,

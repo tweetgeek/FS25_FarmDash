@@ -7,20 +7,6 @@ SKIP_TYPES = {
     'WATER', 'DIGESTATE',
 }
 
-FILL_NAMES_PL = {
-    'WHEAT': 'Pszenica', 'BARLEY': 'Jęczmień', 'OAT': 'Owies',
-    'CANOLA': 'Rzepak', 'SORGHUM': 'Sorgo', 'SUNFLOWER': 'Słonecznik',
-    'SOYBEAN': 'Soja', 'MAIZE': 'Kukurydza', 'POTATO': 'Ziemniaki',
-    'SUGARBEET': 'Buraki cukrowe', 'BEETROOT': 'Buraczki',
-    'CARROT': 'Marchew', 'PARSNIP': 'Pasternak',
-    'SILAGE': 'Kiszonka', 'DRYGRASS_WINDROW': 'Siano',
-    'GRASS_WINDROW': 'Trawa', 'STRAW': 'Słoma',
-    'WOODCHIPS': 'Zrębki', 'WOOL': 'Wełna', 'MILK': 'Mleko',
-    'FERTILIZER': 'Nawóz stały', 'LIQUIDFERTILIZER': 'Nawóz płynny',
-    'HERBICIDE': 'Herbicyd', 'SEEDS': 'Nasiona',
-    'LIQUIDMANURE': 'Gnojowica', 'MANURE': 'Obornik',
-    'SLURRY': 'Gnojówka',
-}
 
 FILL_EMOJIS = {
     'WHEAT': '🌾', 'BARLEY': '🌾', 'OAT': '🌾', 'SORGHUM': '🌾',
@@ -59,7 +45,6 @@ def parse_storages(save_path: Path, farm_id: int = 1) -> dict:
             continue
         items.append({
             "type": fill_type,
-            "name": FILL_NAMES_PL.get(fill_type, fill_type),
             "emoji": FILL_EMOJIS.get(fill_type, '📦'),
             "level": round(level),
             "category": CATEGORY.get(fill_type, 'other'),

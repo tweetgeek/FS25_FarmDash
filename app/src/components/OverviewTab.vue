@@ -1,42 +1,42 @@
 <template>
   <div>
-    <div v-if="loading" class="loading"><span class="spinner"></span> Ładowanie danych...</div>
+    <div v-if="loading" class="loading"><span class="spinner"></span> {{ t('ui.overview.loading') }}</div>
     <div v-else-if="error" class="alert alert-error">{{ error }}</div>
     <div v-else-if="data">
       <div class="stats-grid">
         <div class="stat-item">
           <div class="stat-value">{{ formatMoney(money) }}</div>
-          <div class="stat-label">💰 Gotówka</div>
+          <div class="stat-label">{{ t('ui.overview.cash') }}</div>
         </div>
         <div class="stat-item">
           <div class="stat-value" :style="{ color: loan > 0 ? 'var(--danger)' : 'var(--text-dim)' }">{{ formatMoney(loan) }}</div>
-          <div class="stat-label">🏦 Pożyczka</div>
+          <div class="stat-label">{{ t('ui.overview.loan') }}</div>
         </div>
         <div class="stat-item">
           <div class="stat-value">{{ playTimeH }}h</div>
-          <div class="stat-label">⏱️ Czas gry</div>
+          <div class="stat-label">{{ t('ui.overview.playTime') }}</div>
         </div>
         <div class="stat-item">
           <div class="stat-value">{{ round1(stats.workedHectares || 0) }} ha</div>
-          <div class="stat-label">🌾 Uprawiane</div>
+          <div class="stat-label">{{ t('ui.overview.cultivated') }}</div>
         </div>
         <div class="stat-item">
           <div class="stat-value">{{ round1(stats.threshedHectares || 0) }} ha</div>
-          <div class="stat-label">🚜 Zebrane</div>
+          <div class="stat-label">{{ t('ui.overview.harvested') }}</div>
         </div>
         <div class="stat-item">
           <div class="stat-value">{{ env.dayTime || '—' }}</div>
-          <div class="stat-label">🕐 Czas w grze</div>
+          <div class="stat-label">{{ t('ui.overview.gameTime') }}</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">{{ env.currentDay != null ? 'Dzień ' + env.currentDay : '—' }}</div>
-          <div class="stat-label">{{ env.currentWeatherIcon || '🌤️' }} Pogoda</div>
+          <div class="stat-value">{{ env.currentDay != null ? t('ui.overview.day') + ' ' + env.currentDay : '—' }}</div>
+          <div class="stat-label">{{ env.currentWeatherIcon || '🌤️' }} {{ t('ui.overview.weatherLabel') }}</div>
         </div>
       </div>
 
       <div class="summary-cols">
         <div class="card">
-          <h2>🏡 Informacje o farmie</h2>
+          <h2>{{ t('ui.overview.farmInfo') }}</h2>
           <table style="width:100%; font-size:13px; border-collapse:collapse">
             <tr v-for="row in farmRows" :key="row.label">
               <td style="padding:5px 8px; color:var(--text-dim); width:50%">{{ row.label }}</td>
@@ -45,7 +45,7 @@
           </table>
         </div>
         <div class="card">
-          <h2>💹 Finanse</h2>
+          <h2>{{ t('ui.overview.finances') }}</h2>
           <div v-if="financeRows.length > 0">
             <table class="finance-table" style="width:100%">
               <tr v-for="row in financeRows" :key="row.label">
@@ -56,7 +56,7 @@
               </tr>
             </table>
           </div>
-          <div v-else style="color:var(--text-dim); font-size:13px">Brak danych finansowych</div>
+          <div v-else style="color:var(--text-dim); font-size:13px">{{ t('ui.overview.noFinances') }}</div>
         </div>
       </div>
     </div>
@@ -65,7 +65,10 @@
 
 <script setup>
 import { computed } from 'vue'
-import { formatMoney, round1, growthModeLabel, fuelLabel } from '../utils.js'
+import { formatMoney, round1 } from '../utils.js'
+import { useI18n } from '../i18n/index.js'
+
+const { t } = useI18n()
 
 const props = defineProps({
   data: Object,
@@ -87,28 +90,30 @@ const playTimeH = computed(() => {
 const farmRows = computed(() => {
   const c = career.value
   const f = farm.value
+  const gm = t('growthModes.' + String(c.growthMode))
+  const fu = t('fuelUsage.' + String(c.fuelUsage))
   return [
-    { label: 'Nazwa farmy', value: f.name || c.savegameName || '—' },
-    { label: 'Mapa', value: c.mapTitle || '—' },
-    { label: 'Data zapisu', value: c.saveDateFormatted || c.saveDate || '—' },
-    { label: 'Trudność', value: c.economicDifficulty || '—' },
-    { label: 'Tryb wzrostu', value: growthModeLabel(c.growthMode) },
-    { label: 'Prędkość czasu', value: c.timeScale ? `${c.timeScale}x` : '—' },
-    { label: 'Paliwo', value: fuelLabel(c.fuelUsage) },
-    { label: 'Chwasty', value: c.weedsEnabled ? '✅ Włączone' : '❌ Wyłączone' },
-    { label: 'Wapno', value: c.limeRequired ? '✅ Wymagane' : '❌ Nie wymagane' },
+    { label: t('ui.overview.farmName'),  value: f.name || c.savegameName || '—' },
+    { label: t('ui.overview.map'),       value: c.mapTitle || '—' },
+    { label: t('ui.overview.saveDate'),  value: c.saveDateFormatted || c.saveDate || '—' },
+    { label: t('ui.overview.difficulty'),value: c.economicDifficulty || '—' },
+    { label: t('ui.overview.growthMode'),value: gm === 'growthModes.' + String(c.growthMode) ? String(c.growthMode || '—') : gm },
+    { label: t('ui.overview.timeScale'), value: c.timeScale ? `${c.timeScale}x` : '—' },
+    { label: t('ui.overview.fuelUsage'), value: fu === 'fuelUsage.' + String(c.fuelUsage) ? String(c.fuelUsage || '—') : fu },
+    { label: t('ui.overview.weeds'),     value: c.weedsEnabled ? t('ui.overview.weedsOn') : t('ui.overview.weedsOff') },
+    { label: t('ui.overview.lime'),      value: c.limeRequired ? t('ui.overview.limeRequired') : t('ui.overview.limeNotRequired') },
   ]
 })
 
 const FINANCE_KEYS = [
-  ['soldVehicles', '🚜 Sprzedane pojazdy'],
-  ['newVehiclesCost', '🏷️ Zakup pojazdów'],
-  ['harvestIncome', '🌾 Dochód ze żniw'],
-  ['missionIncome', '📋 Dochód z misji'],
-  ['wagePayment', '👷 Wynagrodzenia'],
-  ['purchaseFertilizer', '🧪 Nawozy'],
-  ['purchaseSeeds', '🌱 Nasiona'],
-  ['purchaseFuel', '⛽ Paliwo'],
+  ['soldVehicles',      'soldVehicles'],
+  ['newVehiclesCost',   'newVehiclesCost'],
+  ['harvestIncome',     'harvestIncome'],
+  ['missionIncome',     'missionIncome'],
+  ['wagePayment',       'wagePayment'],
+  ['purchaseFertilizer','purchaseFertilizer'],
+  ['purchaseSeeds',     'purchaseSeeds'],
+  ['purchaseFuel',      'purchaseFuel'],
 ]
 
 const financeRows = computed(() => {
@@ -117,6 +122,6 @@ const financeRows = computed(() => {
   if (!latest) return []
   return FINANCE_KEYS
     .filter(([key]) => latest[key] != null && latest[key] !== 0)
-    .map(([key, label]) => ({ label, val: latest[key] }))
+    .map(([key, msgKey]) => ({ label: t(`ui.overview.finance.${msgKey}`), val: latest[key] }))
 })
 </script>

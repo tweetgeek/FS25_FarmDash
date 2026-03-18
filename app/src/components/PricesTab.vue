@@ -1,12 +1,12 @@
 <template>
   <div>
-    <div v-if="loading" class="loading"><span class="spinner"></span> Ładowanie cen...</div>
+    <div v-if="loading" class="loading"><span class="spinner"></span> {{ t('ui.prices.loading') }}</div>
     <div v-else-if="error" class="alert alert-error">{{ error }}</div>
     <div v-else-if="data">
 
       <div class="alert alert-info" style="margin-bottom:16px">
-        📅 Aktualny okres: <strong>{{ data.currentPeriodLabel }}</strong>
-        &nbsp;·&nbsp; {{ filteredItems.length }} pozycji
+        {{ t('ui.prices.currentPeriod') }}: <strong>{{ currentPeriodLabel }}</strong>
+        &nbsp;·&nbsp; {{ filteredItems.length }} {{ t('ui.prices.items') }}
       </div>
 
       <!-- Category filter -->
@@ -16,26 +16,26 @@
           style="font-size:12px; padding:5px 12px;"
           @click="setCategory(null)"
         >
-          🌍 Wszystkie ({{ data.items.length }})
+          {{ t('ui.prices.all') }} ({{ allItems.length }})
         </button>
         <button
-          v-for="[key, [label, emoji]] in presentCategories"
+          v-for="key in presentCategories"
           :key="key"
           :class="['tab-btn', { active: activeCategory === key }]"
           style="font-size:12px; padding:5px 12px;"
           @click="setCategory(key)"
         >
-          {{ emoji }} {{ label }} ({{ countByCategory(key) }})
+          {{ t('categories.' + key + '.emoji') }} {{ t('categories.' + key + '.label') }} ({{ countByCategory(key) }})
         </button>
       </div>
 
       <!-- Chart -->
       <div class="card">
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px">
-          <h2 style="margin-bottom:0">📈 Wykres cen sezonowych</h2>
+          <h2 style="margin-bottom:0">{{ t('ui.prices.chart') }}</h2>
           <select v-model="selectedItem" class="crop-select">
             <option v-for="c in filteredItems" :key="c.type" :value="c.type">
-              {{ c.emoji }} {{ c.name }}
+              {{ c.emoji }} {{ tItem(c.type) }}
             </option>
           </select>
         </div>
@@ -49,12 +49,12 @@
         <table class="fields-table">
           <thead>
             <tr>
-              <th class="sortable" @click="toggleSort('name')">Produkt {{ sortIcon('name') }}</th>
-              <th class="sortable" @click="toggleSort('currentPrice')">Aktualnie {{ sortIcon('currentPrice') }}</th>
-              <th class="sortable" @click="toggleSort('nextPrice')">Następny okres {{ sortIcon('nextPrice') }}</th>
-              <th class="sortable" @click="toggleSort('minPrice')">Min {{ sortIcon('minPrice') }}</th>
-              <th class="sortable" @click="toggleSort('maxPrice')">Max (kiedy) {{ sortIcon('maxPrice') }}</th>
-              <th>Trend</th>
+              <th class="sortable" @click="toggleSort('name')">{{ t('ui.prices.colProduct') }} {{ sortIcon('name') }}</th>
+              <th class="sortable" @click="toggleSort('currentPrice')">{{ t('ui.prices.colCurrent') }} {{ sortIcon('currentPrice') }}</th>
+              <th class="sortable" @click="toggleSort('nextPrice')">{{ t('ui.prices.colNext') }} {{ sortIcon('nextPrice') }}</th>
+              <th class="sortable" @click="toggleSort('minPrice')">{{ t('ui.prices.colMin') }} {{ sortIcon('minPrice') }}</th>
+              <th class="sortable" @click="toggleSort('maxPrice')">{{ t('ui.prices.colMax') }} {{ sortIcon('maxPrice') }}</th>
+              <th>{{ t('ui.prices.colTrend') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -65,7 +65,7 @@
               style="cursor:pointer"
               @click="selectedItem = c.type"
             >
-              <td><strong>{{ c.emoji }} {{ c.name }}</strong></td>
+              <td><strong>{{ c.emoji }} {{ tItem(c.type) }}</strong></td>
               <td>
                 <span :class="priceClass(c)">{{ c.currentPrice }} PLN/t</span>
               </td>
@@ -73,12 +73,12 @@
               <td style="color:var(--text-dim)">{{ c.minPrice }}</td>
               <td>
                 <span style="color:var(--accent)">{{ c.maxPrice }}</span>
-                <small style="color:var(--text-dim)"> ({{ data.periodLabels[c.maxPeriodIdx] }})</small>
+                <small style="color:var(--text-dim)"> ({{ periodLabels[c.maxPeriodIdx] }})</small>
               </td>
               <td>
-                <span v-if="c.trend === 'up'" style="color:var(--accent)">▲ Rośnie</span>
-                <span v-else-if="c.trend === 'down'" style="color:var(--danger)">▼ Spada</span>
-                <span v-else style="color:var(--text-dim)">— Stabilna</span>
+                <span v-if="c.trend === 'up'" style="color:var(--accent)">{{ t('ui.prices.trendUp') }}</span>
+                <span v-else-if="c.trend === 'down'" style="color:var(--danger)">{{ t('ui.prices.trendDown') }}</span>
+                <span v-else style="color:var(--text-dim)">{{ t('ui.prices.trendFlat') }}</span>
               </td>
             </tr>
           </tbody>
@@ -92,8 +92,16 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip } from 'chart.js'
+import { useI18n } from '../i18n/index.js'
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip)
+
+const { t, tItem, locale } = useI18n()
+
+const CATEGORY_ORDER = [
+  'crops', 'processed', 'dairy', 'animals', 'fish',
+  'forestry', 'bales', 'byproducts', 'inputs', 'construction', 'other',
+]
 
 const props = defineProps({
   data: Object,
@@ -108,10 +116,19 @@ let chartInstance = null
 
 const allItems = computed(() => props.data?.items || [])
 
+const periodLabels = computed(() =>
+  (props.data?.periods || []).map(p => t('periods.' + p))
+)
+
+const currentPeriodLabel = computed(() => {
+  const periods = props.data?.periods || []
+  const idx = props.data?.currentPeriodIdx ?? 0
+  return periods[idx] ? t('periods.' + periods[idx]) : '—'
+})
+
 const presentCategories = computed(() => {
-  if (!props.data?.categories) return []
   const present = new Set(allItems.value.map(i => i.category))
-  return Object.entries(props.data.categories).filter(([key]) => present.has(key))
+  return CATEGORY_ORDER.filter(key => present.has(key))
 })
 
 function countByCategory(key) {
@@ -119,10 +136,10 @@ function countByCategory(key) {
 }
 
 const sortCol = ref('currentPrice')
-const sortDir = ref(-1) // -1 = desc, 1 = asc
+const sortDir = ref(-1)
 
 const SORT_KEYS = {
-  name:         i => i.name.toLowerCase(),
+  name:         i => tItem(i.type).toLowerCase(),
   currentPrice: i => i.currentPrice,
   nextPrice:    i => i.nextPrice,
   minPrice:     i => i.minPrice,
@@ -178,7 +195,7 @@ function buildChart() {
   if (!chartCanvas.value || !currentItemData.value || !props.data) return
 
   const item = currentItemData.value
-  const labels = props.data.periodLabels
+  const labels = periodLabels.value
   const currentIdx = props.data.currentPeriodIdx
 
   const colors = item.prices.map((_, i) =>
@@ -198,7 +215,7 @@ function buildChart() {
     data: {
       labels,
       datasets: [{
-        label: `${item.emoji} ${item.name} (PLN/t)`,
+        label: `${item.emoji} ${tItem(item.type)} (PLN/t)`,
         data: item.prices,
         backgroundColor: colors,
         borderColor: borderColors,
@@ -214,7 +231,7 @@ function buildChart() {
         tooltip: {
           callbacks: {
             label: ctx => `${ctx.parsed.y} PLN/t`,
-            afterLabel: ctx => ctx.dataIndex === currentIdx ? '← aktualny' : '',
+            afterLabel: ctx => ctx.dataIndex === currentIdx ? t('ui.prices.currentMarker') : '',
           },
         },
       },
@@ -247,6 +264,9 @@ watch(() => props.data, (val) => {
 })
 
 watch(selectedItem, () => nextTick(buildChart))
+
+// Rebuild chart when locale changes (labels update)
+watch(locale, () => nextTick(buildChart))
 
 onUnmounted(() => {
   if (chartInstance) chartInstance.destroy()
