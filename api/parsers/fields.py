@@ -1,15 +1,47 @@
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-FRUIT_EMOJI = {
-    "WHEAT": "🌾", "BARLEY": "🌾", "OAT": "🌾", "SORGHUM": "🌾",
-    "MAIZE": "🌽", "CANOLA": "🟡", "SUNFLOWER": "🌻", "SOYBEAN": "🫘",
-    "POTATO": "🥔", "SUGARBEET": "🟤", "BEETROOT": "🟣",
-    "CARROT": "🥕", "PARSNIP": "🥕", "ONION": "🧅",
-    "PEA": "🟢", "GREENBEAN": "🟢", "SPINACH": "🥬",
-    "COTTON": "⚪", "GRASS": "🌿",
-    "UNKNOWN": "❓", "FALLOW": "⬜",
+FRUIT_INFO: dict[str, tuple[str, str]] = {
+    # (Polish name, emoji)
+    "WHEAT":        ("Pszenica",            "🌾"),
+    "BARLEY":       ("Jęczmień",            "🌾"),
+    "OAT":          ("Owies",               "🌾"),
+    "SORGHUM":      ("Sorgo",               "🌾"),
+    "MAIZE":        ("Kukurydza",           "🌽"),
+    "CANOLA":       ("Rzepak",              "🟡"),
+    "SUNFLOWER":    ("Słonecznik",          "🌻"),
+    "SOYBEAN":      ("Soja",               "🫘"),
+    "POTATO":       ("Ziemniaki",           "🥔"),
+    "SUGARBEET":    ("Buraki cukrowe",      "🟤"),
+    "SUGARCANE":    ("Trzcina cukrowa",     "🎋"),
+    "BEETROOT":     ("Buraczki",            "🟣"),
+    "CARROT":       ("Marchew",             "🥕"),
+    "PARSNIP":      ("Pasternak",           "🥕"),
+    "ONION":        ("Cebula",              "🧅"),
+    "PEA":          ("Groch",               "🟢"),
+    "GREENBEAN":    ("Fasolka szparagowa",  "🫘"),
+    "SPINACH":      ("Szpinak",             "🥬"),
+    "COTTON":       ("Bawełna",             "⚪"),
+    "GRASS":        ("Trawa",               "🌿"),
+    "MEADOW":       ("Łąka",                "🌿"),
+    "OILSEEDRADISH":("Rzodkiew oleista",    "🌱"),
+    "LETTUCE":      ("Sałata",              "🥬"),
+    "CHILLI":       ("Chili",               "🌶️"),
+    "TOMATO":       ("Pomidor",             "🍅"),
+    "STRAWBERRY":   ("Truskawka",           "🍓"),
+    "GARLIC":       ("Czosnek",             "🧄"),
+    "NAPACABBAGE":  ("Kapusta pekińska",    "🥬"),
+    "GRAPE":        ("Winogrona",           "🍇"),
+    "OLIVE":        ("Oliwki",              "🫒"),
+    "SPRING_ONION": ("Szczypiorek",         "🌱"),
+    "RICE":         ("Ryż",                 "🌾"),
+    "POPLAR":       ("Topola",              "🌳"),
+    "UNKNOWN":      ("Nieznana",            "❓"),
+    "FALLOW":       ("Ugór",                "⬜"),
 }
+
+# Keep backward-compatible alias used elsewhere
+FRUIT_EMOJI = {k: v[1] for k, v in FRUIT_INFO.items()}
 
 GROUND_STATUS = {
     "HARVEST_READY": "ready",
@@ -66,13 +98,16 @@ def parse_fields(save_path: Path) -> dict:
         farm_id = ownership.get(field_id, 0)
 
         status = _get_status(fruit_type, ground_type, growth_state)
-        emoji = FRUIT_EMOJI.get(fruit_type, "🌱")
+        info = FRUIT_INFO.get(fruit_type)
+        fruit_name = info[0] if info else fruit_type.replace("_", " ").title()
+        emoji = info[1] if info else "🌱"
 
         field = {
             "id": field_id,
             "farmId": farm_id,
             "owned": farm_id != 0,
             "fruitType": fruit_type,
+            "fruitName": fruit_name,
             "fruitEmoji": emoji,
             "groundType": ground_type,
             "growthState": growth_state,
