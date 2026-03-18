@@ -117,8 +117,8 @@ const CATEGORY_LABELS = {
 // Build a price lookup map keyed by fill type
 const priceMap = computed(() => {
   const map = {}
-  if (!props.pricesData?.crops) return map
-  for (const crop of props.pricesData.crops) {
+  if (!props.pricesData?.items) return map
+  for (const crop of props.pricesData.items) {
     map[crop.type] = {
       currentPrice: crop.currentPrice,
       maxPrice: crop.maxPrice,
