@@ -211,6 +211,25 @@ ITEM_INFO: dict[str, tuple[str, str, str]] = {
 
 
 
+_DIFFICULTY_MULTIPLIER = {
+    'EASY':   3.0,
+    'NORMAL': 1.0,
+    'HARD':   0.5,
+}
+
+
+def _get_price_multiplier(save_path: Path) -> float:
+    career_file = save_path / "careerSavegame.xml"
+    if not career_file.exists():
+        return 1.0
+    try:
+        root = ET.parse(career_file).getroot()
+        difficulty = root.findtext("settings/economicDifficulty", "NORMAL").strip().upper()
+        return _DIFFICULTY_MULTIPLIER.get(difficulty, 1.0)
+    except Exception:
+        return 1.0
+
+
 def _get_current_period_idx(save_path: Path) -> int:
     env_file = save_path / "environment.xml"
     if not env_file.exists():
@@ -232,6 +251,7 @@ def parse_economy(save_path: Path) -> dict:
         return {"items": [], "currentPeriodIdx": 0, "periods": PERIODS}
 
     current_period_idx = _get_current_period_idx(save_path)
+    price_mult = _get_price_multiplier(save_path)
 
     try:
         tree = ET.parse(xml_file)
@@ -256,7 +276,8 @@ def parse_economy(save_path: Path) -> dict:
         prices = []
         for period in PERIODS:
             p_el = history_el.find(f"period[@period='{period}']")
-            prices.append(int(p_el.text) if p_el is not None and p_el.text else 0)
+            base = int(p_el.text) if p_el is not None and p_el.text else 0
+            prices.append(round(base * price_mult))
 
         if not any(prices):
             continue

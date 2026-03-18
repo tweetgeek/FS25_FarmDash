@@ -73,7 +73,7 @@ def parse_vehicles(save_path: Path) -> dict:
             "propertyState": property_state,
             "age": round(age, 1),
             "price": round(price),
-            "operatingTime": round(operating_time, 1),
+            "operatingTime": round(operating_time / 3600, 1),
             "position": position,
             "damage": round(damage * 100, 1),
             "dirt": round(dirt * 100, 1),

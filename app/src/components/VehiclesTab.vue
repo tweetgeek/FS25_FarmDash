@@ -35,7 +35,7 @@
           </div>
           <template v-for="u in fuelUnits(v)" :key="u.type">
             <div style="font-size:11px; color:var(--text-dim); margin-top:4px">
-              ⛽ {{ u.type }}: {{ Math.round(u.level) }}L
+              ⛽ {{ tItem(u.type) }}: {{ Math.round(u.level) }}L
               <div class="progress-bar">
                 <div class="progress-fill progress-fuel" :style="{ width: fuelPct(u) + '%' }"></div>
               </div>
@@ -43,7 +43,7 @@
           </template>
           <template v-for="u in cargoUnits(v)" :key="u.type">
             <div v-if="u.level > 0" style="font-size:11px; color:var(--text-dim); margin-top:2px">
-              📦 {{ u.type }}: {{ Math.round(u.level) }}
+              📦 {{ tItem(u.type) }}: {{ Math.round(u.level) }}
             </div>
           </template>
         </div>
@@ -56,7 +56,7 @@
 import { computed } from 'vue'
 import { useI18n } from '../i18n/index.js'
 
-const { t } = useI18n()
+const { t, tItem } = useI18n()
 
 const props = defineProps({
   data: Object,
@@ -79,7 +79,7 @@ function fuelUnits(v) {
 }
 
 function cargoUnits(v) {
-  return (v.fillUnits || []).filter(u => !FUEL_TYPES.includes(u.type)).slice(0, 2)
+  return (v.fillUnits || []).filter(u => !FUEL_TYPES.includes(u.type) && u.type !== 'UNKNOWN')
 }
 
 function fuelPct(u) {

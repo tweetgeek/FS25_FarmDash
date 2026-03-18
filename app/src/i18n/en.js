@@ -1,6 +1,11 @@
 export default {
   ui: {
     backButton: '← Back',
+    offline: {
+      title: 'FarmDash server is offline',
+      subtitle: 'Launch the FarmDash app to continue.',
+      retrying: 'Retrying connection...',
+    },
     lang: '🇵🇱 PL',
     theme: { light: '☀️', dark: '🌙', system: '💻' },
 
@@ -92,6 +97,7 @@ export default {
       statusReady: 'Ready',
       statusGrowing: 'Growing',
       statusEmpty: 'Empty',
+      seePrices: 'Show market prices',
     },
 
     vehicles: {
@@ -128,6 +134,8 @@ export default {
       trendDown: '▼ Falling',
       trendFlat: '— Stable',
       currentMarker: '← current',
+      searchPlaceholder: 'Search product...',
+      clearSearch: 'Clear',
     },
 
     precision: {
@@ -520,9 +528,12 @@ export default {
     LIQUIDSEEDTREATMENT: 'Liquid seed treatment',
     DIESEL: 'Diesel',
     DEF: 'AdBlue',
+    ADBLUE: 'AdBlue',
     METHANE: 'Methane',
+    METHANOL: 'Methanol',
     ELECTRICCHARGE: 'Electric charge',
     WATER: 'Water',
+    AIR: 'Air',
     // Construction
     BOARDS: 'Boards',
     PLANKS: 'Planks',

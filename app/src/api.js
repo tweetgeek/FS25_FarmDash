@@ -1,5 +1,14 @@
+import { markOffline, markOnline } from './useServerStatus.js'
+
 async function apiFetch(url, options) {
-  const res = await fetch(url, options)
+  let res
+  try {
+    res = await fetch(url, options)
+  } catch (e) {
+    markOffline()
+    throw e
+  }
+  markOnline()
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: 'Błąd serwera ' + res.status }))
     throw new Error(err.detail || 'Błąd serwera ' + res.status)

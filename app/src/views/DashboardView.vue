@@ -82,6 +82,7 @@ import { getConfig, getSummary, getFields, getVehicles, getWeather, getEconomy, 
 import { useI18n } from '../i18n/index.js'
 import { useTheme } from '../theme.js'
 import { usePersist } from '../useUIState.js'
+import { activeTab } from '../useNavigation.js'
 import OverviewTab from '../components/OverviewTab.vue'
 import FieldsTab from '../components/FieldsTab.vue'
 import VehiclesTab from '../components/VehiclesTab.vue'
@@ -109,7 +110,7 @@ const TABS = [
 const route = useRoute()
 const saveId = route.query.save
 
-const activeTab = usePersist('fd_activeTab', 'overview')
+// activeTab is imported from useNavigation.js (shared singleton)
 const refreshInterval = ref(30)
 const version = ref(null)
 const lastRefresh = ref(null)

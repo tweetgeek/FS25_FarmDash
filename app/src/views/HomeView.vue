@@ -81,7 +81,7 @@
             <div class="save-name">{{ save.savegameName || save.name }}</div>
             <div class="save-map">🗺️ {{ save.mapTitle || '—' }}</div>
             <div class="save-meta">
-              <span class="save-money">💰 {{ save.money ? formatMoney(save.money) : '—' }}</span>
+              <span class="save-money">💰 {{ save.money ? formatMoney(save.money, locale) : '—' }}</span>
               <span>📅 {{ save.saveDate || '—' }}</span>
               <span>🗂️ {{ save.id }}</span>
             </div>

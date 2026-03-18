@@ -1,6 +1,11 @@
 export default {
   ui: {
     backButton: '← Wróć',
+    offline: {
+      title: 'Serwer FarmDash jest wyłączony',
+      subtitle: 'Uruchom aplikację FarmDash, aby kontynuować.',
+      retrying: 'Próba ponownego połączenia...',
+    },
     lang: '🇬🇧 EN',
     theme: { light: '☀️', dark: '🌙', system: '💻' },
 
@@ -92,6 +97,7 @@ export default {
       statusReady: 'Gotowe',
       statusGrowing: 'Rośnie',
       statusEmpty: 'Puste',
+      seePrices: 'Pokaż ceny skupu',
     },
 
     vehicles: {
@@ -128,6 +134,8 @@ export default {
       trendDown: '▼ Spada',
       trendFlat: '— Stabilna',
       currentMarker: '← aktualny',
+      searchPlaceholder: 'Szukaj produktu...',
+      clearSearch: 'Wyczyść',
     },
 
     precision: {
@@ -520,9 +528,12 @@ export default {
     LIQUIDSEEDTREATMENT: 'Zaprawianie nasion',
     DIESEL: 'Diesel',
     DEF: 'AdBlue',
+    ADBLUE: 'AdBlue',
     METHANE: 'Metan',
+    METHANOL: 'Metanol',
     ELECTRICCHARGE: 'Energia elektryczna',
     WATER: 'Woda',
+    AIR: 'Powietrze',
     // Materiały budowlane
     BOARDS: 'Deski',
     PLANKS: 'Belki',

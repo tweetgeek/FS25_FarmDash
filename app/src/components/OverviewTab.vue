@@ -5,11 +5,11 @@
     <div v-else-if="data">
       <div class="stats-grid">
         <div class="stat-item">
-          <div class="stat-value">{{ formatMoney(money) }}</div>
+          <div class="stat-value">{{ formatMoney(money, locale) }}</div>
           <div class="stat-label">{{ t('ui.overview.cash') }}</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value" :style="{ color: loan > 0 ? 'var(--danger)' : 'var(--text-dim)' }">{{ formatMoney(loan) }}</div>
+          <div class="stat-value" :style="{ color: loan > 0 ? 'var(--danger)' : 'var(--text-dim)' }">{{ formatMoney(loan, locale) }}</div>
           <div class="stat-label">{{ t('ui.overview.loan') }}</div>
         </div>
         <div class="stat-item">
@@ -53,7 +53,7 @@
               <tr v-for="row in financeRows" :key="row.label">
                 <td style="padding:5px 8px; color:var(--text-dim)">{{ row.label }}</td>
                 <td style="padding:5px 8px; text-align:right" :class="row.val >= 0 ? 'finance-positive' : 'finance-negative'">
-                  {{ formatMoney(row.val) }}
+                  {{ formatMoney(row.val, locale) }}
                 </td>
               </tr>
             </table>
@@ -71,7 +71,7 @@ import { formatMoney, round1 } from '../utils.js'
 import { useI18n } from '../i18n/index.js'
 import WeatherTab from './WeatherTab.vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const props = defineProps({
   data: Object,
