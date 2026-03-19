@@ -452,8 +452,20 @@ header .subtitle {
 }
 
 .forecast-icon { font-size: 22px; display: block; margin-bottom: 4px; }
-.forecast-day { color: var(--text-dim); font-size: 11px; }
+.forecast-month { color: var(--text-dim); font-size: 11px; }
 .forecast-type { font-weight: 600; font-size: 11px; margin-top: 2px; }
+.forecast-current { border: 1px solid var(--accent) !important; }
+.forecast-temps { display: flex; gap: 4px; font-size: 11px; margin-top: 3px; }
+.temp-high { color: var(--accent); font-weight: 600; }
+.temp-low { color: var(--text-dim); }
+
+.weather-temp {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-left: 10px;
+  vertical-align: middle;
+}
 
 /* Refresh indicator */
 .refresh-bar {

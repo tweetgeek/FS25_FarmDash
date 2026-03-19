@@ -11,6 +11,20 @@ WEATHER_ICONS = {
     "FOG": "🌫️",
 }
 
+# Same order as in economy.py — index 0 = Marzec, 1 = Kwiecień, ...
+PERIODS = [
+    'EARLY_SPRING', 'MID_SPRING', 'LATE_SPRING',
+    'EARLY_SUMMER', 'MID_SUMMER', 'LATE_SUMMER',
+    'EARLY_AUTUMN', 'MID_AUTUMN', 'LATE_AUTUMN',
+    'EARLY_WINTER', 'MID_WINTER', 'LATE_WINTER',
+]
+
+
+def _period_key(day: int, days_per_period: int) -> str:
+    year_length = 12 * days_per_period
+    idx = ((day - 1) % year_length) // days_per_period
+    return PERIODS[idx]
+
 
 def parse_environment(save_path: Path) -> dict:
     xml_file = save_path / "environment.xml"
@@ -22,8 +36,10 @@ def parse_environment(save_path: Path) -> dict:
 
     day_time_sec = float(root.findtext("dayTime", "0"))
     current_day = int(root.findtext("currentDay", "1"))
+    days_per_period = int(root.findtext("daysPerPeriod", "3"))
 
     time_str = _seconds_to_hhmm(day_time_sec)
+    current_period_key = _period_key(current_day, days_per_period)
 
     weather_el = root.find("weather")
     wetness = 0.0
@@ -32,8 +48,6 @@ def parse_environment(save_path: Path) -> dict:
     forecast = []
 
     if weather_el is not None:
-        time_since_rain = int(weather_el.get("timeSinceLastRain", 0))
-
         ground_el = weather_el.find("ground")
         if ground_el is not None:
             wetness = float(ground_el.get("wetness", 0))
@@ -44,52 +58,54 @@ def parse_environment(save_path: Path) -> dict:
 
         forecast_el = weather_el.find("forecast")
         if forecast_el is not None:
-            seen_days = {}
+            instances = []
             for inst in forecast_el.findall("instance"):
                 type_name = inst.get("typeName", "SUN")
                 start_day = int(inst.get("startDay", current_day))
-                start_day_time_ms = int(inst.get("startDayTime", 0))
+                start_ms = int(inst.get("startDayTime", 0))
                 duration_ms = int(inst.get("duration", 0))
-                season = inst.get("season", "")
-
-                # Determine current weather (matches current day/time)
-                start_day_time_sec = start_day_time_ms / 1000
-                end_day_time_sec = (start_day_time_ms + duration_ms) / 1000
-
-                if start_day == current_day:
-                    if start_day_time_sec <= day_time_sec <= end_day_time_sec:
-                        current_weather = type_name
-                    elif start_day_time_sec <= day_time_sec and start_day == current_day:
-                        # Check if this is the latest past entry
-                        if not any(
-                            f["startDay"] == current_day and f["startDayTimeSec"] <= day_time_sec and f["startDayTimeSec"] > start_day_time_sec
-                            for f in forecast
-                        ):
-                            pass
-
-                # Group by day - pick dominant weather per day
-                if start_day not in seen_days:
-                    seen_days[start_day] = {
-                        "day": start_day,
-                        "typeName": type_name,
-                        "icon": WEATHER_ICONS.get(type_name, "🌤️"),
-                        "season": season,
-                        "startDayTimeSec": start_day_time_sec,
-                    }
-
-                forecast.append({
+                start_sec = start_ms / 1000
+                instances.append({
                     "day": start_day,
                     "typeName": type_name,
-                    "icon": WEATHER_ICONS.get(type_name, "🌤️"),
-                    "season": season,
-                    "startDayTimeSec": start_day_time_sec,
+                    "startSec": start_sec,
+                    "endSec": start_sec + duration_ms / 1000,
                     "durationSec": duration_ms / 1000,
+                    "season": inst.get("season", ""),
+                })
+
+            # Determine current weather: last instance that has already started
+            for inst in sorted(instances, key=lambda x: (x["day"], x["startSec"])):
+                if inst["day"] < current_day:
+                    current_weather = inst["typeName"]
+                elif inst["day"] == current_day and inst["startSec"] <= day_time_sec:
+                    current_weather = inst["typeName"]
+
+            # Build per-day forecast (dominant weather by total duration)
+            by_day: dict[int, list] = {}
+            for inst in instances:
+                by_day.setdefault(inst["day"], []).append(inst)
+
+            for day in sorted(by_day.keys()):
+                entries = by_day[day]
+                counts: dict[str, float] = {}
+                for e in entries:
+                    counts[e["typeName"]] = counts.get(e["typeName"], 0) + e["durationSec"]
+                dominant = max(counts, key=counts.get)
+                forecast.append({
+                    "day": day,
+                    "typeName": dominant,
+                    "icon": WEATHER_ICONS.get(dominant, "🌤️"),
+                    "periodKey": _period_key(day, days_per_period),
+                    "season": entries[0]["season"],
                 })
 
     return {
         "currentDay": current_day,
         "dayTime": time_str,
         "dayTimeSec": day_time_sec,
+        "daysPerPeriod": days_per_period,
+        "currentPeriodKey": current_period_key,
         "currentWeather": current_weather,
         "currentWeatherIcon": WEATHER_ICONS.get(current_weather, "🌤️"),
         "wetness": round(wetness * 100, 1),
