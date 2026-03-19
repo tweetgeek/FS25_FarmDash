@@ -7,7 +7,7 @@ from pathlib import Path
 import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from api.routes import router
 from api import VERSION
 from api.config import read_config, write_config
@@ -26,16 +26,20 @@ app = FastAPI(title="FS25 Farming Dashboard")
 
 app.include_router(router, prefix="/api")
 
-app.mount(
-    "/assets",
-    StaticFiles(directory=str(STATIC_BASE / "api" / "static" / "assets")),
-    name="assets",
-)
+_assets_dir = STATIC_BASE / "api" / "static" / "assets"
+if _assets_dir.exists():
+    app.mount("/assets", StaticFiles(directory=str(_assets_dir)), name="assets")
 
 
 @app.get("/{full_path:path}")
 async def spa(full_path: str):
-    return FileResponse(str(STATIC_BASE / "api" / "static" / "index.html"))
+    index = STATIC_BASE / "api" / "static" / "index.html"
+    if not index.exists():
+        return HTMLResponse(
+            "<h2>Frontend not built</h2><p>Run: <code>cd app &amp;&amp; npm run build</code></p>",
+            status_code=503,
+        )
+    return FileResponse(str(index))
 
 
 def _create_tray_image():

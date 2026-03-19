@@ -97,6 +97,7 @@ export default {
       statusReady: 'Gotowe',
       statusGrowing: 'Rośnie',
       statusEmpty: 'Puste',
+      myField: 'Twoje pole',
       seePrices: 'Pokaż ceny skupu',
     },
 
@@ -573,5 +574,25 @@ export default {
     destructibleRockMission: 'Usuń skały',
     mowMission: 'Koszenie',
     wrapMission: 'Owijanie beli',
+  },
+
+  groundTypes: {
+    CULTIVATED:          'Uprawiona',
+    PLOWED:              'Zorana',
+    HARVEST_READY:       'Gotowe do zbioru',
+    HARVEST_READY_OTHER: 'Gotowe do zbioru',
+    STUBBLE_TILLAGE:     'Po zbiorach',
+    SOWN:                'Zasiana',
+    GRASS:               'Trawa',
+    ROLLED:              'Wałowana',
+    DIRECT_SOWN:         'Bezorkowy siew',
+  },
+
+  sprayTypes: {
+    HERBICIDE:  'Herbicyd',
+    FERTILIZER: 'Nawóz',
+    LIME:       'Wapno',
+    MANURE:     'Obornik',
+    SLURRY:     'Gnojowica',
   },
 }
