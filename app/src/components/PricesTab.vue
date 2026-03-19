@@ -52,9 +52,12 @@
             </option>
           </select>
         </div>
-        <div style="position:relative; height:240px">
-          <canvas ref="chartCanvas"></canvas>
-        </div>
+        <PriceChart
+          :item="currentItemData"
+          :period-labels="periodLabels"
+          :current-idx="data?.currentPeriodIdx ?? 0"
+          :locale="locale"
+        />
       </div>
 
       <!-- Prices table -->
@@ -103,14 +106,12 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted, computed, nextTick } from 'vue'
-import { Chart, LineController, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Filler } from 'chart.js'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useI18n } from '../i18n/index.js'
 import { usePersist } from '../useUIState.js'
 import { formatPrice } from '../utils.js'
 import { pricesSearch, pricesCategory } from '../useNavigation.js'
-
-Chart.register(LineController, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Filler)
+import PriceChart from './PriceChart.vue'
 
 const { t, tItem, locale } = useI18n()
 
@@ -125,12 +126,10 @@ const props = defineProps({
   error: String,
 })
 
-const chartCanvas = ref(null)
 const searchInput = ref(null)
 const selectedItem = ref(null)
 const activeCategory = pricesCategory   // shared singleton from useNavigation
 const searchQuery    = pricesSearch     // shared singleton from useNavigation
-let chartInstance = null
 
 const allItems = computed(() => props.data?.items || [])
 
@@ -203,13 +202,11 @@ function setCategory(key) {
   if (filteredItems.value.length > 0) {
     selectedItem.value = filteredItems.value[0].type
   }
-  nextTick(buildChart)
 }
 
-const currentItemData = computed(() => {
-  if (!props.data || !selectedItem.value) return null
-  return allItems.value.find(c => c.type === selectedItem.value)
-})
+const currentItemData = computed(() =>
+  allItems.value.find(c => c.type === selectedItem.value) ?? null
+)
 
 function priceClass(c) {
   const ratio = c.currentPrice / c.maxPrice
@@ -218,90 +215,18 @@ function priceClass(c) {
   return ''
 }
 
-function buildChart() {
-  if (!chartCanvas.value || !currentItemData.value || !props.data) return
-
-  const item = currentItemData.value
-  const labels = periodLabels.value
-  const currentIdx = props.data.currentPeriodIdx
-
-  if (chartInstance) {
-    chartInstance.destroy()
-    chartInstance = null
-  }
-
-  chartInstance = new Chart(chartCanvas.value, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label: `${item.emoji} ${tItem(item.type)} (PLN/t)`,
-        data: item.prices,
-        borderColor: '#4caf50',
-        backgroundColor: 'rgba(76, 175, 80, 0.08)',
-        fill: true,
-        tension: 0.4,
-        pointBackgroundColor: item.prices.map((_, i) => i === currentIdx ? '#fff' : '#4caf50'),
-        pointBorderColor: item.prices.map((_, i) => i === currentIdx ? '#81c784' : '#4caf50'),
-        pointBorderWidth: item.prices.map((_, i) => i === currentIdx ? 2 : 1),
-        pointRadius: item.prices.map((_, i) => i === currentIdx ? 6 : 3),
-        pointHoverRadius: 6,
-      }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => formatPrice(ctx.parsed.y, locale.value),
-            afterLabel: ctx => ctx.dataIndex === currentIdx ? t('ui.prices.currentMarker') : '',
-          },
-        },
-      },
-      scales: {
-        x: {
-          ticks: { color: '#9ea7b3', font: { size: 10 } },
-          grid: { color: 'rgba(53, 59, 72, 0.5)' },
-        },
-        y: {
-          ticks: { color: '#9ea7b3', callback: v => formatPrice(v, locale.value) },
-          grid: { color: 'rgba(53, 59, 72, 0.5)' },
-        },
-      },
-    },
-  })
-}
-
 onMounted(() => {
-  if (allItems.value.length) {
-    selectedItem.value = allItems.value[0].type
-    nextTick(buildChart)
-  }
+  if (allItems.value.length) selectedItem.value = allItems.value[0].type
 })
 
 watch(() => props.data, (val) => {
-  if (val?.items?.length && !selectedItem.value) {
-    selectedItem.value = val.items[0].type
-  }
-  nextTick(buildChart)
+  if (val?.items?.length && !selectedItem.value) selectedItem.value = val.items[0].type
 })
-
-watch(selectedItem, () => nextTick(buildChart))
 
 watch(searchQuery, () => {
   if (filteredItems.value.length > 0 && !filteredItems.value.find(i => i.type === selectedItem.value)) {
     selectedItem.value = filteredItems.value[0].type
   }
-  nextTick(buildChart)
-})
-
-// Rebuild chart when locale changes (labels update)
-watch(locale, () => nextTick(buildChart))
-
-onUnmounted(() => {
-  if (chartInstance) chartInstance.destroy()
 })
 </script>
 

@@ -4,34 +4,17 @@
     <div v-else-if="error" class="alert alert-error">{{ error }}</div>
     <div v-else-if="data">
       <div class="stats-grid">
-        <div class="stat-item">
-          <div class="stat-value">{{ formatMoney(money, locale) }}</div>
-          <div class="stat-label">{{ t('ui.overview.cash') }}</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value" :style="{ color: loan > 0 ? 'var(--danger)' : 'var(--text-dim)' }">{{ formatMoney(loan, locale) }}</div>
-          <div class="stat-label">{{ t('ui.overview.loan') }}</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">{{ playTimeH }}h</div>
-          <div class="stat-label">{{ t('ui.overview.playTime') }}</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">{{ round1(stats.workedHectares || 0) }} ha</div>
-          <div class="stat-label">{{ t('ui.overview.cultivated') }}</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">{{ round1(stats.threshedHectares || 0) }} ha</div>
-          <div class="stat-label">{{ t('ui.overview.harvested') }}</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">{{ env.dayTime || '—' }}</div>
-          <div class="stat-label">{{ t('ui.overview.gameTime') }}</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">{{ env.currentDay != null ? t('ui.overview.day') + ' ' + env.currentDay : '—' }}</div>
-          <div class="stat-label">{{ env.currentWeatherIcon || '🌤️' }} {{ t('ui.overview.weatherLabel') }}</div>
-        </div>
+        <StatCard :label="t('ui.overview.cash')">{{ formatMoney(money, locale) }}</StatCard>
+        <StatCard :label="t('ui.overview.loan')" :value-style="{ color: loan > 0 ? 'var(--danger)' : 'var(--text-dim)' }">
+          {{ formatMoney(loan, locale) }}
+        </StatCard>
+        <StatCard :label="t('ui.overview.playTime')">{{ playTimeH }}h</StatCard>
+        <StatCard :label="t('ui.overview.cultivated')">{{ round1(stats.workedHectares || 0) }} ha</StatCard>
+        <StatCard :label="t('ui.overview.harvested')">{{ round1(stats.threshedHectares || 0) }} ha</StatCard>
+        <StatCard :label="t('ui.overview.gameTime')">{{ env.dayTime || '—' }}</StatCard>
+        <StatCard :label="(env.currentWeatherIcon || '🌤️') + ' ' + t('ui.overview.weatherLabel')">
+          {{ env.currentDay != null ? t('ui.overview.day') + ' ' + env.currentDay : '—' }}
+        </StatCard>
       </div>
 
       <WeatherTab :data="weatherData" :loading="weatherLoading" :error="weatherError" />
@@ -70,6 +53,7 @@ import { computed } from 'vue'
 import { formatMoney, round1 } from '../utils.js'
 import { useI18n } from '../i18n/index.js'
 import WeatherTab from './WeatherTab.vue'
+import StatCard from './StatCard.vue'
 
 const { t, locale } = useI18n()
 
