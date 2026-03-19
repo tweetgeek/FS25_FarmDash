@@ -184,6 +184,7 @@ export default {
       copy: '⎘ Copy',
       copied: '✓ Copied',
       refreshIn: 'Refresh in',
+      refreshNow: 'Refresh now',
       loading: '⏳ Loading data...',
       refreshing: '🔄 Refreshing...',
       loadingTitle: 'Loading...',

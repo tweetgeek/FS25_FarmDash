@@ -27,6 +27,12 @@
       <span class="refresh-status">
         <template v-if="refreshStatus">{{ t('ui.dashboard.' + refreshStatus) }}</template>
         <template v-else-if="secondsLeft > 0">⏱️ {{ t('ui.dashboard.refreshIn') }} {{ secondsLeft }}s</template>
+        <button
+          class="refresh-btn"
+          :disabled="!!refreshStatus"
+          :title="t('ui.dashboard.refreshNow')"
+          @click="manualRefresh"
+        >⟳</button>
       </span>
     </div>
   </div>
@@ -174,14 +180,14 @@ const effectiveOverviewData = computed(() => {
 const effectiveVehiclesData = computed(() => {
   const base = vehiclesData.value
   if (!base || !modLiveData.value?.vehicles?.length) return base
-  const modByName = {}
-  for (const mv of modLiveData.value.vehicles) { if (mv.name) modByName[mv.name] = mv }
+  const modByFilename = {}
+  for (const mv of modLiveData.value.vehicles) { if (mv.filename) modByFilename[mv.filename] = mv }
   return {
     ...base,
     vehicles: (base.vehicles || []).map(v => {
-      const mv = modByName[v.name]
+      const mv = modByFilename[v.filename]
       if (!mv) return v
-      return { ...v, damage: mv.damage ?? v.damage, dirt: mv.dirt ?? v.dirt, operatingTime: mv.operatingHours ?? v.operatingTime, fuelPct: mv.fuelPct }
+      return { ...v, name: mv.name || v.name, typeName: mv.typeName || v.typeName, damage: mv.damage ?? v.damage, dirt: mv.dirt ?? v.dirt, operatingTime: mv.operatingHours ?? v.operatingTime, fuelPct: mv.fuelPct }
     }),
   }
 })
@@ -374,6 +380,18 @@ function setRefreshOk() {
       countdown = null
     }
   }, 1000)
+}
+
+async function manualRefresh() {
+  if (refreshStatus.value) return
+  if (timer) clearTimeout(timer)
+  if (countdown) { clearInterval(countdown); countdown = null }
+  refreshStatus.value = 'refreshing'
+  await loadTab(activeTab.value)
+  if (activeTab.value !== 'overview') { loadOverview(); loadWeather() }
+  loadModLive()
+  setRefreshOk()
+  scheduleRefresh()
 }
 
 function scheduleRefresh() {
