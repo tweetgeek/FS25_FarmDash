@@ -57,6 +57,18 @@
           />
         </div>
 
+        <div class="form-group">
+          <label>{{ t('ui.home.updateUrlLabel') }}</label>
+          <input
+            type="text"
+            v-model="updateUrl"
+            :placeholder="t('ui.home.updateUrlPlaceholder')"
+          />
+          <div style="margin-top:4px; font-size:12px; color:var(--text-dim)">
+            {{ t('ui.home.updateUrlHint') }}
+          </div>
+        </div>
+
         <button class="btn" :disabled="saving" @click="onSaveConfig">
           {{ saving ? t('ui.home.savingButton') : t('ui.home.saveButton') }}
         </button>
@@ -109,6 +121,7 @@ const router = useRouter()
 
 const fs25Path = ref('')
 const refreshInterval = ref(60)
+const updateUrl = ref('')
 const version = ref(null)
 const saving = ref(false)
 const browsing = ref(false)
@@ -124,6 +137,7 @@ onMounted(async () => {
     const config = await getConfig()
     if (config.fs25_path) fs25Path.value = config.fs25_path
     if (config.refresh_interval) refreshInterval.value = config.refresh_interval
+    if (config.update_url) updateUrl.value = config.update_url
     if (config.version) version.value = config.version
     if (config.fs25_path) {
       await loadSaves()
@@ -157,7 +171,7 @@ async function onSaveConfig() {
   saving.value = true
   alert.value = null
   try {
-    await saveConfig({ fs25_path: fs25Path.value.trim(), refresh_interval: refreshInterval.value || 60 })
+    await saveConfig({ fs25_path: fs25Path.value.trim(), refresh_interval: refreshInterval.value || 60, update_url: updateUrl.value.trim() })
     alert.value = { type: 'success', message: 'Konfiguracja zapisana pomyślnie.' }
     await loadSaves()
   } catch (e) {

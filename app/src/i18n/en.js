@@ -25,6 +25,20 @@ export default {
       savesTitle: '💾 Select save game',
       savesLoading: 'Loading saves...',
       savesEmpty: 'No save games found at the given path.',
+      updateUrlLabel: 'Update check URL',
+      updateUrlPlaceholder: 'e.g. https://your-site.github.io/farmdash/version.json',
+      updateUrlHint: 'Leave empty if you do not use automatic updates.',
+    },
+
+    update: {
+      title: 'Update available',
+      changelog: "What's new:",
+      downloading: 'Downloading...',
+      restarting: 'Update downloaded. The app will restart shortly...',
+      installBtn: '⬇️ Install & restart',
+      installing: 'Installing...',
+      cancel: 'Cancel',
+      devOnly: 'Auto-update only works in the .exe build.',
     },
 
     tabs: {

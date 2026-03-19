@@ -83,3 +83,19 @@ export function getProduction(saveId) {
 export function getModLive() {
   return apiFetch('/api/mod-live')
 }
+
+export function checkUpdate() {
+  return apiFetch('/api/check-update')
+}
+
+export function applyUpdate(downloadUrl) {
+  return apiFetch('/api/apply-update', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ download_url: downloadUrl }),
+  })
+}
+
+export function getUpdateStatus() {
+  return apiFetch('/api/update-status')
+}

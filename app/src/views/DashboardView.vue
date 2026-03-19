@@ -13,9 +13,14 @@
         <button v-if="wakeLockSupported" :class="['theme-btn', { active: wakeLockActive }]" :title="wakeLockEnabled ? t('ui.dashboard.wakeLockOff') : t('ui.dashboard.wakeLockOn')" @click="toggleWakeLock">{{ wakeLockEnabled ? '☀️' : '💤' }}</button>
       </div>
       <button class="btn btn-secondary" style="font-size:13px; padding:6px 14px;" @click="toggleLocale">{{ t('ui.lang') }}</button>
+      <button v-if="updateInfo" class="btn update-badge" @click="showUpdateModal = true">
+        🔄 v{{ updateInfo.latest }}
+      </button>
       <RouterLink to="/" class="btn btn-secondary" style="font-size:13px; padding:6px 14px;">{{ t('ui.backButton') }}</RouterLink>
     </div>
   </header>
+
+  <UpdateModal v-if="showUpdateModal" :info="updateInfo" @close="showUpdateModal = false" />
 
   <div class="refresh-bar">
     <div class="container">
@@ -89,7 +94,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import NoSleep from 'nosleep.js'
 import { useRoute } from 'vue-router'
-import { getConfig, getSummary, getFields, getVehicles, getWeather, getEconomy, getStorage, getLocalAddress, getPrecisionFarming, getAnimals, getProduction, getModLive } from '../api.js'
+import { getConfig, getSummary, getFields, getVehicles, getWeather, getEconomy, getStorage, getLocalAddress, getPrecisionFarming, getAnimals, getProduction, getModLive, checkUpdate } from '../api.js'
 import { useI18n } from '../i18n/index.js'
 import { useTheme } from '../theme.js'
 import { usePersist } from '../useUIState.js'
@@ -103,6 +108,7 @@ import PrecisionTab from '../components/PrecisionTab.vue'
 import AnimalsTab from '../components/AnimalsTab.vue'
 import ProductionTab from '../components/ProductionTab.vue'
 import WeatherWidget from '../components/WeatherWidget.vue'
+import UpdateModal from '../components/UpdateModal.vue'
 
 const { t, locale, setLocale } = useI18n()
 function toggleLocale() { setLocale(locale.value === 'pl' ? 'en' : 'pl') }
@@ -192,6 +198,9 @@ const productionError = ref(null)
 
 const modLiveData = ref(null)
 
+const updateInfo      = ref(null)
+const showUpdateModal = ref(false)
+
 // Merge mod live data (more real-time) on top of XML-parsed data where applicable
 const effectiveOverviewData = computed(() => {
   const base = overviewData.value
@@ -272,6 +281,7 @@ onMounted(async () => {
   document.addEventListener('fullscreenchange', onFullscreenChange)
 
   getLocalAddress().then(r => { localUrl.value = r.url }).catch(() => {})
+  checkUpdate().then(r => { if (r.available) updateInfo.value = r }).catch(() => {})
 
   await Promise.all([loadOverview(), loadFields(), loadVehicles(), loadWeather(), loadPrices(), loadStorage(), loadPrecision(), loadAnimals(), loadProduction(), loadModLive()])
   setRefreshOk()
