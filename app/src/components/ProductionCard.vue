@@ -38,7 +38,7 @@
     <!-- Costs to claim -->
     <div v-if="facility.productionCostsToClaim > 0" class="prod-costs">
       <span>{{ t('ui.production.costsToClaim') }}:</span>
-      <span class="prod-costs-value">{{ facility.productionCostsToClaim.toFixed(2) }} $</span>
+      <span class="prod-costs-value">{{ formatMoney(facility.productionCostsToClaim, locale) }}</span>
     </div>
 
   </div>
@@ -47,8 +47,9 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from '../i18n/index.js'
+import { formatMoney } from '../utils.js'
 
-const { t, tItem } = useI18n()
+const { t, tItem, locale } = useI18n()
 
 const props = defineProps({ facility: Object })
 
@@ -81,9 +82,23 @@ function catIcon(cat) { return CAT_ICONS[cat] || '🏗️' }
 function fillEmoji(type) { return FILL_EMOJIS[type] || '📦' }
 
 function tProc(id, fallback) {
-  const key = 'ui.production.processes.' + id
-  const val = t(key)
-  return val !== key ? val : fallback
+  // 1. Explicit process translation (makeFlour, makeBread, growTomato…)
+  const procKey = 'ui.production.processes.' + id
+  const procVal = t(procKey)
+  if (procVal !== procKey) return procVal
+
+  // 2. Try as fill-type name: "tomato" → "TOMATO"
+  const upper = id.toUpperCase()
+  const direct = tItem(upper)
+  if (direct !== upper) return direct
+
+  // 3. camelCase → UPPER_SNAKE: "springOnion" → "SPRING_ONION"
+  const snake = id.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase()
+  const snakeVal = tItem(snake)
+  if (snakeVal !== snake) return snakeVal
+
+  // 4. Raw label fallback
+  return fallback
 }
 
 function formatQty(level) {
