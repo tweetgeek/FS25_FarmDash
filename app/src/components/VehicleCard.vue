@@ -1,6 +1,6 @@
 <template>
   <div class="vehicle-card">
-    <div class="vehicle-name" :title="vehicle.filename">{{ vehicle.name }}</div>
+    <div class="vehicle-name" :title="vehicle.filename">{{ vehicleIcon }} {{ vehicle.name }}</div>
     <div class="vehicle-stats">
       <div>
         <div style="color:var(--text-dim)">{{ t('ui.vehicles.wear') }}</div>
@@ -25,7 +25,15 @@
         <div class="vehicle-stat-val">{{ vehicle.age }}m</div>
       </div>
     </div>
-    <template v-for="u in fuelUnits" :key="u.type">
+    <template v-if="vehicle.fuelPct != null">
+      <div style="font-size:11px; color:var(--text-dim); margin-top:4px">
+        ⛽ {{ t('ui.vehicles.fuel') }}: {{ vehicle.fuelPct }}%
+        <div class="progress-bar">
+          <div class="progress-fill progress-fuel" :style="{ width: vehicle.fuelPct + '%' }"></div>
+        </div>
+      </div>
+    </template>
+    <template v-else v-for="u in fuelUnits" :key="u.type">
       <div style="font-size:11px; color:var(--text-dim); margin-top:4px">
         ⛽ {{ tItem(u.type) }}: {{ Math.round(u.level) }}L
         <div class="progress-bar">
@@ -48,6 +56,57 @@ import { useI18n } from '../i18n/index.js'
 const { t, tItem } = useI18n()
 
 const props = defineProps({ vehicle: Object })
+
+const VEHICLE_ICONS = {
+  tractor:             '🚜',
+  harvester:           '🌾',
+  combine:             '🌾',
+  forageharvester:     '🌿',
+  potatorharvester:    '🥔',
+  sugarbeetharvester:  '🟤',
+  vegetableharvester:  '🥬',
+  sprayer:             '💧',
+  fertilizingmachine:  '🌱',
+  manurespreader:      '💩',
+  slurrytanker:        '💧',
+  sower:               '🌱',
+  seeder:              '🌱',
+  cultivator:          '⚙️',
+  subsoiler:           '⚙️',
+  deepcultivator:      '⚙️',
+  plow:                '⚙️',
+  ridgeplow:           '⚙️',
+  mulcher:             '✂️',
+  mower:               '✂️',
+  mowingmachine:       '✂️',
+  tedder:              '🌾',
+  windrower:           '🌾',
+  baler:               '🟫',
+  roundbaler:          '🟫',
+  squarebaler:         '🟫',
+  wrapper:             '⬜',
+  tipper:              '🪣',
+  trailer:             '🚛',
+  truck:               '🚛',
+  loader:              '🏗️',
+  telehandler:         '🏗️',
+  timberharvester:     '🪵',
+  woodchipper:         '🪵',
+  stonepicker:         '⛏️',
+  car:                 '🚗',
+  weight:              '⚖️',
+  frontweight:         '⚖️',
+  rearweight:          '⚖️',
+  attachable:          '🔗',
+  implement:           '🔗',
+}
+
+const vehicleIcon = computed(() => {
+  // Strip optional namespace prefix: "Fendt.tractor" → "tractor"
+  const raw = props.vehicle.typeName || ''
+  const base = (raw.includes('.') ? raw.split('.').pop() : raw).toLowerCase()
+  return VEHICLE_ICONS[base] ?? '🚜'
+})
 
 const FUEL_TYPES = ['DIESEL', 'PETROL', 'ELECTRICCHARGE', 'METHANE']
 

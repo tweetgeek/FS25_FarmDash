@@ -1,3 +1,4 @@
+import json
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from pathlib import Path
@@ -47,6 +48,23 @@ def get_config():
 @router.get("/local-address")
 def get_local_address():
     return {"url": f"http://{_get_local_ip()}:{PORT}"}
+
+
+@router.get("/mod-live")
+def get_mod_live():
+    saves_dir = get_saves_dir()
+    if saves_dir is None:
+        return {"active": False}
+    mod_file = saves_dir / "modSettings" / "farmdash_live.json"
+    if not mod_file.exists():
+        return {"active": False}
+    try:
+        with open(mod_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        data["active"] = True
+        return data
+    except Exception:
+        return {"active": False}
 
 
 @router.get("/detect-saves-path")

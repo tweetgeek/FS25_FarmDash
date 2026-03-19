@@ -16,6 +16,7 @@ def parse_vehicles(save_path: Path) -> dict:
         filename = v_el.get("filename", "")
         farm_id = v_el.get("farmId", "0")
         property_state = v_el.get("propertyState", "NONE")
+        type_name = v_el.get("typeName", "")
 
         # Skip vehicles not owned by a farm
         if property_state == "NONE":
@@ -69,6 +70,7 @@ def parse_vehicles(save_path: Path) -> dict:
         vehicles.append({
             "filename": filename,
             "name": name,
+            "typeName": type_name,
             "farmId": farm_id,
             "propertyState": property_state,
             "age": round(age, 1),
