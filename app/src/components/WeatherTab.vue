@@ -3,18 +3,6 @@
     <div v-if="loading" class="loading"><span class="spinner"></span> {{ t('ui.weather.loading') }}</div>
     <div v-else-if="error" class="alert alert-error">{{ error }}</div>
     <div v-else-if="data">
-      <div class="weather-card">
-        <div class="weather-icon">{{ data.currentWeatherIcon || '🌤️' }}</div>
-        <div class="weather-info">
-          <div class="weather-type">{{ t('weather.' + data.currentWeather) }}</div>
-          <div class="weather-details">
-            {{ t('ui.weather.day') }} {{ data.currentDay || '—' }} • {{ t('ui.weather.hour') }} {{ data.dayTime || '—' }}
-            <template v-if="data.wetness > 0"> • {{ t('ui.weather.groundWetness') }}: {{ data.wetness }}%</template>
-            <template v-if="data.snowHeight > 0"> • {{ t('ui.weather.snow') }}: {{ data.snowHeight }}m</template>
-          </div>
-        </div>
-      </div>
-
       <div class="card">
         <h2>{{ t('ui.weather.forecast') }}</h2>
         <div class="forecast-list">
@@ -22,12 +10,15 @@
             v-for="day in forecastDays"
             :key="day.day"
             class="forecast-item"
-            :style="day.day === data.currentDay ? 'border:1px solid var(--accent)' : ''"
+            :class="{ 'forecast-current': day.isCurrent }"
           >
             <span class="forecast-icon">{{ day.icon }}</span>
-            <div class="forecast-day">{{ t('ui.weather.day') }} {{ day.day }}</div>
-            <div class="forecast-type">{{ t('weather.' + day.dominant) }}</div>
-            <div style="font-size:10px; color:var(--text-dim)">{{ t('seasons.' + day.season) }}</div>
+            <div class="forecast-month">{{ day.monthLabel }}</div>
+            <div class="forecast-type">{{ t('weather.' + day.typeName) }}</div>
+            <div v-if="day.tempHigh != null" class="forecast-temps">
+              <span class="temp-high">{{ day.tempHigh }}°</span>
+              <span class="temp-low">{{ day.tempLow }}°</span>
+            </div>
           </div>
         </div>
       </div>
@@ -49,22 +40,15 @@ const props = defineProps({
 
 const forecastDays = computed(() => {
   const forecast = props.data?.forecast || []
-  const byDay = {}
-  forecast.forEach(f => {
-    if (!byDay[f.day]) byDay[f.day] = []
-    byDay[f.day].push(f)
-  })
-  return Object.keys(byDay)
-    .map(Number)
-    .sort((a, b) => a - b)
-    .slice(0, 14)
-    .map(day => {
-      const entries = byDay[day]
-      const counts = {}
-      entries.forEach(e => { counts[e.typeName] = (counts[e.typeName] || 0) + e.durationSec })
-      const dominant = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0]
-      const icon = entries.find(e => e.typeName === dominant)?.icon || '🌤️'
-      return { day, dominant, icon, season: entries[0]?.season || '' }
-    })
+  const currentDay = props.data?.currentDay
+  return forecast.slice(0, 14).map(f => ({
+    day: f.day,
+    typeName: f.typeName,
+    icon: f.icon,
+    monthLabel: f.periodKey ? t('periods.' + f.periodKey) : '',
+    isCurrent: f.day === currentDay,
+    tempHigh: f.tempHigh ?? null,
+    tempLow:  f.tempLow  ?? null,
+  }))
 })
 </script>

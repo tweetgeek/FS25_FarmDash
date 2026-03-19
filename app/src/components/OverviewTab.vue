@@ -12,9 +12,6 @@
         <StatCard :label="t('ui.overview.cultivated')">{{ round1(stats.workedHectares || 0) }} ha</StatCard>
         <StatCard :label="t('ui.overview.harvested')">{{ round1(stats.threshedHectares || 0) }} ha</StatCard>
         <StatCard :label="t('ui.overview.gameTime')">{{ env.dayTime || '—' }}</StatCard>
-        <StatCard :label="(env.currentWeatherIcon || '🌤️') + ' ' + t('ui.overview.weatherLabel')">
-          {{ env.currentDay != null ? t('ui.overview.day') + ' ' + env.currentDay : '—' }}
-        </StatCard>
       </div>
 
       <WeatherTab :data="weatherData" :loading="weatherLoading" :error="weatherError" />

@@ -53,9 +53,11 @@
         </button>
       </div>
 
+      <WeatherWidget :data="effectiveWeatherData" />
+
       <div v-show="activeTab === 'overview'">
         <OverviewTab :data="effectiveOverviewData" :loading="overviewLoading" :error="overviewError"
-          :weatherData="weatherData" :weatherLoading="weatherLoading" :weatherError="weatherError" />
+          :weatherData="effectiveWeatherData" :weatherLoading="weatherLoading" :weatherError="weatherError" />
       </div>
       <div v-show="activeTab === 'fields'">
         <FieldsTab :data="effectiveFieldsData" :loading="fieldsLoading" :error="fieldsError" />
@@ -99,6 +101,7 @@ import StorageTab from '../components/StorageTab.vue'
 import PrecisionTab from '../components/PrecisionTab.vue'
 import AnimalsTab from '../components/AnimalsTab.vue'
 import ProductionTab from '../components/ProductionTab.vue'
+import WeatherWidget from '../components/WeatherWidget.vue'
 
 const { t, locale, setLocale } = useI18n()
 function toggleLocale() { setLocale(locale.value === 'pl' ? 'en' : 'pl') }
@@ -221,6 +224,26 @@ const effectiveVehiclesData = computed(() => {
       return { ...v, name: mv.name || v.name, typeName: mv.typeName || v.typeName, damage: mv.damage ?? v.damage, dirt: mv.dirt ?? v.dirt, operatingTime: mv.operatingHours ?? v.operatingTime, fuelPct: mv.fuelPct }
     }),
   }
+})
+
+const effectiveWeatherData = computed(() => {
+  const base = weatherData.value
+  if (!base || !modLiveData.value?.weather) return base
+  const modW = modLiveData.value.weather
+  const result = { ...base }
+  if (modW.current) {
+    result.temperature = modW.current.temperature ?? null
+    result.windSpeed   = modW.current.windSpeed   ?? null
+  }
+  if (modW.daily?.length && base.forecast?.length) {
+    const byDay = {}
+    for (const d of modW.daily) byDay[d.day] = d
+    result.forecast = base.forecast.map(f => {
+      const md = byDay[f.day]
+      return md ? { ...f, tempHigh: md.tempHigh, tempLow: md.tempLow } : f
+    })
+  }
+  return result
 })
 
 const effectiveFieldsData = computed(() => {
