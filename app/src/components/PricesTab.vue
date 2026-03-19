@@ -152,8 +152,8 @@ function countByCategory(key) {
   return allItems.value.filter(i => i.category === key).length
 }
 
-const sortCol = usePersist('fd_pricesSortCol', 'currentPrice')
-const sortDir = usePersist('fd_pricesSortDir', -1)
+const sortCol = usePersist('fd_pricesSortCol', 'name')
+const sortDir = usePersist('fd_pricesSortDir', 1)
 
 const SORT_KEYS = {
   name:         i => tItem(i.type).toLowerCase(),

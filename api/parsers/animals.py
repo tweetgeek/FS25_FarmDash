@@ -58,7 +58,8 @@ def parse_animals(save_path: Path) -> dict:
         building_name = _extract_building_name(filename)
 
         # ── Animal clusters ──────────────────────────────────────────────
-        by_sub: dict[str, dict] = {}
+        # Key: (subType, age) — keep distinct age groups separate
+        by_group: dict[tuple, dict] = {}
         for cl_el in animals_el.findall("clusters/animal"):
             sub_type = cl_el.get("subType", "UNKNOWN")
             num = int(cl_el.get("numAnimals", 0))
@@ -68,21 +69,21 @@ def parse_animals(save_path: Path) -> dict:
             health = int(cl_el.get("health", 0))
             repro = int(cl_el.get("reproduction", 0))
 
-            if sub_type not in by_sub:
-                by_sub[sub_type] = {
+            key = (sub_type, age)
+            if key not in by_group:
+                by_group[key] = {
                     "subType": sub_type,
                     "mainType": _get_main_type(sub_type),
+                    "age": age,
                     "count": 0,
                     "totalHealth": 0,
-                    "totalAge": 0,
                     "totalRepro": 0,
                 }
-            by_sub[sub_type]["count"] += num
-            by_sub[sub_type]["totalHealth"] += health * num
-            by_sub[sub_type]["totalAge"] += age * num
-            by_sub[sub_type]["totalRepro"] += repro * num
+            by_group[key]["count"] += num
+            by_group[key]["totalHealth"] += health * num
+            by_group[key]["totalRepro"] += repro * num
 
-        if not by_sub:
+        if not by_group:
             continue
 
         animal_groups = []
@@ -91,17 +92,16 @@ def parse_animals(save_path: Path) -> dict:
         health_n = 0
         main_type = None
 
-        for s in by_sub.values():
+        for s in sorted(by_group.values(), key=lambda x: (x["subType"], x["age"])):
             n = s["count"]
             avg_health = round(s["totalHealth"] / n, 1)
-            avg_age = round(s["totalAge"] / n, 1)
             avg_repro = round(s["totalRepro"] / n, 1)
             animal_groups.append({
                 "subType": s["subType"],
                 "mainType": s["mainType"],
                 "count": n,
                 "avgHealth": avg_health,
-                "avgAgeMonths": avg_age,
+                "ageMonths": s["age"],
                 "avgReproduction": avg_repro,
             })
             total_animals += n

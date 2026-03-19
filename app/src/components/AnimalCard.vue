@@ -11,10 +11,10 @@
     </div>
 
     <div class="animal-groups">
-      <div v-for="g in pen.animalGroups" :key="g.subType" class="animal-group-row">
+      <div v-for="g in pen.animalGroups" :key="g.subType + '_' + g.ageMonths" class="animal-group-row">
         <span class="animal-subtype">{{ formatSubType(g.subType) }}</span>
         <span class="animal-group-count">{{ g.count }} {{ t('ui.animals.count') }}</span>
-        <span class="animal-age">~{{ Math.round(g.avgAgeMonths) }}m</span>
+        <span class="animal-age">{{ g.ageMonths }}m</span>
       </div>
     </div>
 
