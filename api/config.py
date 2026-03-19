@@ -27,6 +27,7 @@ DEFAULT_CONFIG = {
     "refresh_interval": 60,
     "selected_save": None,
     "open_browser_on_start": False,
+    "update_url": "https://tweetgeek.github.io/FS25_FarmDash/version.json",
 }
 
 

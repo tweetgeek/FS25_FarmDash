@@ -1,25 +1,30 @@
-name: Build Windows Release
+name: Build & Release
 
 on:
   release:
     types: [created]
 
 jobs:
+  # ── 1. Build Windows .exe ──────────────────────────────────────────────────
   build-windows:
     runs-on: windows-latest
     permissions:
       contents: write
+    outputs:
+      app_version: ${{ steps.version.outputs.app_version }}
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Set version from release tag
+        id: version
         shell: bash
         run: |
           VERSION="${{ github.ref_name }}"
           VERSION="${VERSION#v}"
           printf 'VERSION = "%s"\n' "$VERSION" > api/__init__.py
           echo "APP_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "app_version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -74,3 +79,50 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist/FarmDash-${{ env.APP_VERSION }}.exe
+
+      - name: Upload exe as artifact for pages deploy
+        uses: actions/upload-artifact@v4
+        with:
+          name: farmdash-exe
+          path: dist/FarmDash-${{ env.APP_VERSION }}.exe
+          retention-days: 1
+
+  # ── 2. Deploy gh-pages ────────────────────────────────────────────────────
+  deploy-pages:
+    runs-on: ubuntu-latest
+    needs: build-windows
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download exe artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: farmdash-exe
+          path: dist/
+
+      - name: Fetch all releases from GitHub API
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api repos/${{ github.repository }}/releases --paginate > all_releases.json
+          echo "Fetched $(python3 -c 'import json,sys; print(len(json.load(open("all_releases.json"))))') releases"
+
+      - name: Generate gh-pages content
+        env:
+          APP_VERSION:  ${{ needs.build-windows.outputs.app_version }}
+          RELEASE_BODY: ${{ github.event.release.body }}
+          RELEASE_NAME: ${{ github.event.release.name }}
+          GH_REPO:      ${{ github.repository }}
+          GH_OWNER:     ${{ github.repository_owner }}
+        run: python .github/scripts/gen_pages.py
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./gh-pages-dist
+          keep_files: true
+          commit_message: "release: v${{ needs.build-windows.outputs.app_version }}"

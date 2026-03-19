@@ -1,9 +1,17 @@
 import json
+import logging
+import os
+import sys
+import threading
+import time as _time
+import urllib.request
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from pathlib import Path
 from api.config import read_config, write_config, get_saves_dir
 from api import VERSION
+
+logger = logging.getLogger("farmdash")
 from api.parsers.career import parse_career
 from api.parsers.farms import parse_farms
 from api.parsers.fields import parse_fields
@@ -226,6 +234,106 @@ def get_production(save_id: str):
     save_path = _get_save_path(save_id)
     return parse_production(save_path)
 
+
+# ── Auto-update ───────────────────────────────────────────────────────────────
+
+def _version_gt(v1: str, v2: str) -> bool:
+    try:
+        return tuple(int(x) for x in v1.split(".")) > tuple(int(x) for x in v2.split("."))
+    except Exception:
+        return False
+
+
+_update_state: dict = {"status": "idle", "progress": 0, "error": ""}
+
+
+@router.get("/check-update")
+def check_update():
+    config = read_config()
+    update_url = config.get("update_url", "").strip()
+    if not update_url:
+        return {"available": False, "reason": "no_url"}
+    try:
+        req = urllib.request.Request(update_url, headers={"User-Agent": f"FarmDash/{VERSION}"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+        latest = data.get("version", "")
+        if _version_gt(latest, VERSION):
+            return {
+                "available": True,
+                "current": VERSION,
+                "latest": latest,
+                "download_url": data.get("download_url", ""),
+                "changelog": data.get("changelog", []),
+            }
+        return {"available": False, "current": VERSION, "latest": latest}
+    except Exception as e:
+        logger.warning("check-update error: %s", e)
+        return {"available": False, "error": str(e)}
+
+
+@router.post("/apply-update")
+def apply_update(body: dict):
+    if not getattr(sys, "frozen", False):
+        raise HTTPException(status_code=400, detail="Aktualizacja dostępna tylko w wersji .exe")
+    download_url = body.get("download_url", "").strip()
+    if not download_url:
+        raise HTTPException(status_code=400, detail="Brak download_url")
+    if _update_state["status"] == "downloading":
+        raise HTTPException(status_code=400, detail="Pobieranie już trwa")
+
+    _update_state.update({"status": "downloading", "progress": 0, "error": ""})
+
+    def _do_update():
+        exe_path = Path(sys.executable)
+        new_exe  = exe_path.parent / "_FarmDash_new.exe"
+        bat_path = exe_path.parent / "_farmdash_update.bat"
+        try:
+            def _progress(blocks, block_size, total):
+                if total > 0:
+                    _update_state["progress"] = min(99, int(blocks * block_size / total * 100))
+            logger.info("Downloading update from %s", download_url)
+            urllib.request.urlretrieve(download_url, str(new_exe), reporthook=_progress)
+            _update_state["progress"] = 100
+            bat = (
+                "@echo off\r\n"
+                "timeout /t 3 /nobreak >nul\r\n"
+                f'move /y "{new_exe}" "{exe_path}"\r\n'
+                f'start "" "{exe_path}"\r\n'
+                'del "%~f0"\r\n'
+            )
+            bat_path.write_text(bat, encoding="utf-8")
+            _update_state["status"] = "launching"
+            logger.info("Launching update script %s", bat_path)
+            import subprocess
+            subprocess.Popen(
+                str(bat_path),
+                shell=True,
+                creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP,
+            )
+            _time.sleep(1)
+            _update_state["status"] = "done"
+            _time.sleep(1)
+            os._exit(0)
+        except Exception as e:
+            logger.error("Update failed: %s", e)
+            _update_state.update({"status": "error", "error": str(e)})
+            if new_exe.exists():
+                try:
+                    new_exe.unlink()
+                except Exception:
+                    pass
+
+    threading.Thread(target=_do_update, daemon=True).start()
+    return {"ok": True}
+
+
+@router.get("/update-status")
+def update_status():
+    return _update_state.copy()
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
 
 def _get_save_path(save_id: str) -> Path:
     config = read_config()

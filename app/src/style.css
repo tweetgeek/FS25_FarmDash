@@ -115,6 +115,20 @@ header .subtitle {
   flex-shrink: 0;
 }
 
+.update-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  animation: update-pulse 2s ease-in-out infinite;
+}
+.update-badge:hover { opacity: .85; }
+@keyframes update-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); }
+  50%       { box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 0%, transparent); }
+}
+
 .page-content { padding: 24px 0; }
 
 /* Cards */

@@ -25,6 +25,20 @@ export default {
       savesTitle: '💾 Wybierz zapis gry',
       savesLoading: 'Ładowanie zapisów...',
       savesEmpty: 'Nie znaleziono żadnych zapisów gry w podanej ścieżce.',
+      updateUrlLabel: 'URL do sprawdzania aktualizacji',
+      updateUrlPlaceholder: 'np. https://twoja-strona.github.io/farmdash/version.json',
+      updateUrlHint: 'Zostaw puste, jeśli nie korzystasz z automatycznych aktualizacji.',
+    },
+
+    update: {
+      title: 'Dostępna aktualizacja',
+      changelog: 'Co nowego:',
+      downloading: 'Pobieranie...',
+      restarting: 'Aktualizacja pobrana. Aplikacja zaraz się zrestartuje...',
+      installBtn: '⬇️ Zainstaluj i zrestartuj',
+      installing: 'Instalowanie...',
+      cancel: 'Anuluj',
+      devOnly: 'Automatyczna aktualizacja działa tylko w wersji .exe.',
     },
 
     tabs: {
