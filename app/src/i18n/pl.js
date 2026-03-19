@@ -195,6 +195,10 @@ export default {
       errorPrecision: 'Błąd ładowania Precision Farming',
       errorAnimals: 'Błąd ładowania danych zwierząt',
       errorProduction: 'Błąd ładowania produkcji',
+      enterFullscreen: 'Włącz pełny ekran',
+      exitFullscreen: 'Wyjdź z pełnego ekranu',
+      wakeLockOn: 'Utrzymuj ekran aktywny',
+      wakeLockOff: 'Wyłącz utrzymywanie ekranu',
     },
 
     production: {
