@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<modDesc descVersion="99">
+    <author>TweetGeek</author>
+    <version>1.0.0</version>
+    <title>
+        <en>FarmDash</en>
+        <de>FarmDash</de>
+        <fr>FarmDash</fr>
+        <es>FarmDash</es>
+    </title>
+    <description>
+        <en>
+            Hello
+        </en>
+    </description>
+    <iconFilename>icon.dds</iconFilename>
+    <multiplayer supported="true"/>
+    <extraSourceFiles>
+        <sourceFile filename="scripts/Helpers.lua"/>
+        <sourceFile filename="scripts/FarmDash.lua"/>
+    </extraSourceFiles>
+</modDesc>
