@@ -221,6 +221,18 @@ ITEM_INFO: dict[str, tuple[str, str, str]] = {
 
 
 
+# Live animal fill types — price-per-liter in economy.xml is meaningless
+# (age-based sell price is computed by the game, not stored here)
+_LIVE_ANIMAL_PREFIXES = (
+    'COW_', 'PIG_', 'SHEEP_', 'HORSE_', 'CHICKEN_', 'HEN_',
+    'GOAT_', 'DEER_', 'RABBIT_', 'DONKEY_', 'OSTRICH_', 'BEE_',
+)
+
+
+def _is_live_animal(fill_type: str) -> bool:
+    return any(fill_type.startswith(p) for p in _LIVE_ANIMAL_PREFIXES)
+
+
 _DIFFICULTY_MULTIPLIER = {
     'EASY':   3.0,
     'NORMAL': 1.0,
@@ -277,6 +289,8 @@ def parse_economy(save_path: Path) -> dict:
     for ft_el in fill_types_el.findall("fillType"):
         fill_type = ft_el.get("fillType", "")
         if not fill_type:
+            continue
+        if _is_live_animal(fill_type):
             continue
 
         history_el = ft_el.find("history")
