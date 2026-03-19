@@ -97,6 +97,7 @@ export default {
       statusReady: 'Ready',
       statusGrowing: 'Growing',
       statusEmpty: 'Empty',
+      myField: 'Your field',
       seePrices: 'Show market prices',
     },
 
@@ -573,5 +574,25 @@ export default {
     destructibleRockMission: 'Remove rocks',
     mowMission: 'Mowing',
     wrapMission: 'Wrapping bales',
+  },
+
+  groundTypes: {
+    CULTIVATED:          'Cultivated',
+    PLOWED:              'Plowed',
+    HARVEST_READY:       'Ready to harvest',
+    HARVEST_READY_OTHER: 'Ready to harvest',
+    STUBBLE_TILLAGE:     'Post-harvest',
+    SOWN:                'Sown',
+    GRASS:               'Grass',
+    ROLLED:              'Rolled',
+    DIRECT_SOWN:         'Direct sown',
+  },
+
+  sprayTypes: {
+    HERBICIDE:  'Herbicide',
+    FERTILIZER: 'Fertilizer',
+    LIME:       'Lime',
+    MANURE:     'Manure',
+    SLURRY:     'Slurry',
   },
 }

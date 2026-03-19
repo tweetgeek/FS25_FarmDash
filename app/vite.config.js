@@ -6,5 +6,13 @@ export default defineConfig({
     build: {
         outDir: '../api/static',
         emptyOutDir: true,
-    }
+    },
+    server: {
+        proxy: {
+            '/api': {
+                target: 'http://localhost:9988',
+                changeOrigin: true,
+            },
+        },
+    },
 })

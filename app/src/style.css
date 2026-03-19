@@ -438,17 +438,16 @@ header .subtitle {
 .weather-details { color: var(--text-dim); font-size: 13px; margin-top: 4px; }
 
 .forecast-list {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
   gap: 8px;
-  flex-wrap: wrap;
 }
 
 .forecast-item {
   background: var(--surface2);
   border-radius: var(--radius);
-  padding: 10px 14px;
+  padding: 10px 8px;
   text-align: center;
-  min-width: 70px;
   font-size: 12px;
 }
 
@@ -589,9 +588,6 @@ header .subtitle {
   .vehicles-grid { grid-template-columns: 1fr; }
   .saves-grid { grid-template-columns: 1fr; }
   .storage-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-
-  /* Forecast */
-  .forecast-item { min-width: 60px; padding: 8px 10px; }
 
   /* Fields summary wrap */
   .fields-summary { gap: 8px; }

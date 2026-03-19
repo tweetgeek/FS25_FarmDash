@@ -44,7 +44,7 @@
             <tr v-for="f in visibleFields" :key="f.id">
               <td>
                 <strong>{{ f.id }}</strong>
-                <span v-if="f.owned" style="margin-left:4px; font-size:11px;" title="Twoje pole">🏠</span>
+                <span v-if="f.owned" style="margin-left:4px; font-size:11px;" :title="t('ui.fields.myField')">🏠</span>
               </td>
               <td>
                 <span
@@ -78,10 +78,10 @@
               </td>
               <td>
                 {{ f.sprayLevel }}/3
-                <small v-if="f.sprayType !== 'NONE'" style="color:var(--text-dim)"> {{ f.sprayType }}</small>
+                <small v-if="f.sprayType !== 'NONE'" style="color:var(--text-dim)"> {{ tSpray(f.sprayType) }}</small>
               </td>
               <td>{{ f.limeLevel }}/3</td>
-              <td style="font-size:12px; color:var(--text-dim)">{{ f.groundType }}</td>
+              <td style="font-size:12px; color:var(--text-dim)">{{ tGround(f.groundType) }}</td>
             </tr>
           </tbody>
         </table>
@@ -134,6 +134,16 @@ function statusLabel(status) {
     growing: t('ui.fields.statusGrowing'),
     empty: t('ui.fields.statusEmpty'),
   }[status] || status
+}
+
+function tGround(key) {
+  const r = t('groundTypes.' + key)
+  return r === 'groundTypes.' + key ? key : r
+}
+
+function tSpray(key) {
+  const r = t('sprayTypes.' + key)
+  return r === 'sprayTypes.' + key ? key : r
 }
 
 function growthPct(f) {
