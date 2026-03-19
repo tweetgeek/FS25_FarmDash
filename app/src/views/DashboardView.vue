@@ -9,6 +9,8 @@
         <button :class="['theme-btn', { active: theme === 'light' }]" @click="setTheme('light')" :title="t('ui.theme.light')">{{ t('ui.theme.light') }}</button>
         <button :class="['theme-btn', { active: theme === 'dark' }]" @click="setTheme('dark')" :title="t('ui.theme.dark')">{{ t('ui.theme.dark') }}</button>
         <button :class="['theme-btn', { active: theme === 'system' }]" @click="setTheme('system')" :title="t('ui.theme.system')">{{ t('ui.theme.system') }}</button>
+        <button class="theme-btn" :title="isFullscreen ? t('ui.dashboard.exitFullscreen') : t('ui.dashboard.enterFullscreen')" @click="toggleFullscreen">{{ isFullscreen ? '⊡' : '⛶' }}</button>
+        <button v-if="wakeLockSupported" :class="['theme-btn', { active: wakeLockActive }]" :title="wakeLockEnabled ? t('ui.dashboard.wakeLockOff') : t('ui.dashboard.wakeLockOn')" @click="toggleWakeLock">{{ wakeLockEnabled ? '☀️' : '💤' }}</button>
       </div>
       <button class="btn btn-secondary" style="font-size:13px; padding:6px 14px;" @click="toggleLocale">{{ t('ui.lang') }}</button>
       <RouterLink to="/" class="btn btn-secondary" style="font-size:13px; padding:6px 14px;">{{ t('ui.backButton') }}</RouterLink>
@@ -96,6 +98,35 @@ const { t, locale, setLocale } = useI18n()
 function toggleLocale() { setLocale(locale.value === 'pl' ? 'en' : 'pl') }
 const { theme, setTheme } = useTheme()
 
+// Fullscreen
+const isFullscreen = ref(false)
+function toggleFullscreen() {
+  if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(() => {}) }
+  else { document.exitFullscreen().catch(() => {}) }
+}
+function onFullscreenChange() { isFullscreen.value = !!document.fullscreenElement }
+
+// Wake Lock
+const wakeLockSupported = 'wakeLock' in navigator
+const wakeLockEnabled = ref(false)
+const wakeLockActive = ref(false)
+let wakeLockSentinel = null
+async function acquireWakeLock() {
+  try {
+    wakeLockSentinel = await navigator.wakeLock.request('screen')
+    wakeLockActive.value = true
+    wakeLockSentinel.addEventListener('release', () => { wakeLockActive.value = false; wakeLockSentinel = null })
+  } catch { wakeLockActive.value = false }
+}
+async function toggleWakeLock() {
+  wakeLockEnabled.value = !wakeLockEnabled.value
+  if (wakeLockEnabled.value) { await acquireWakeLock() }
+  else { if (wakeLockSentinel) { await wakeLockSentinel.release(); wakeLockSentinel = null }; wakeLockActive.value = false }
+}
+async function onVisibilityChange() {
+  if (document.visibilityState === 'visible' && wakeLockEnabled.value && !wakeLockSentinel) { await acquireWakeLock() }
+}
+
 const TABS = [
   { id: 'overview' },
   { id: 'fields' },
@@ -172,6 +203,9 @@ onMounted(async () => {
     if (config.version) version.value = config.version
   } catch {}
 
+  document.addEventListener('fullscreenchange', onFullscreenChange)
+  document.addEventListener('visibilitychange', onVisibilityChange)
+
   getLocalAddress().then(r => { localUrl.value = r.url }).catch(() => {})
 
   await Promise.all([loadOverview(), loadFields(), loadVehicles(), loadWeather(), loadPrices(), loadStorage(), loadPrecision(), loadAnimals(), loadProduction()])
@@ -182,6 +216,9 @@ onMounted(async () => {
 onUnmounted(() => {
   if (timer) clearTimeout(timer)
   if (countdown) clearInterval(countdown)
+  document.removeEventListener('fullscreenchange', onFullscreenChange)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+  if (wakeLockSentinel) wakeLockSentinel.release()
 })
 
 async function copyAddress() {

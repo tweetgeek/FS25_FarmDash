@@ -195,6 +195,10 @@ export default {
       errorPrecision: 'Error loading Precision Farming',
       errorAnimals: 'Error loading animal data',
       errorProduction: 'Error loading production data',
+      enterFullscreen: 'Enter fullscreen',
+      exitFullscreen: 'Exit fullscreen',
+      wakeLockOn: 'Keep screen awake',
+      wakeLockOff: 'Disable screen wake lock',
     },
 
     production: {
