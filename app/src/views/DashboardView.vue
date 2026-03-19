@@ -87,6 +87,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import NoSleep from 'nosleep.js'
 import { useRoute } from 'vue-router'
 import { getConfig, getSummary, getFields, getVehicles, getWeather, getEconomy, getStorage, getLocalAddress, getPrecisionFarming, getAnimals, getProduction, getModLive } from '../api.js'
 import { useI18n } from '../i18n/index.js'
@@ -115,25 +116,17 @@ function toggleFullscreen() {
 }
 function onFullscreenChange() { isFullscreen.value = !!document.fullscreenElement }
 
-// Wake Lock
-const wakeLockSupported = 'wakeLock' in navigator
+// Wake Lock (nosleep.js — works on iOS over HTTP)
+const noSleep = new NoSleep()
+const wakeLockSupported = true
 const wakeLockEnabled = ref(false)
-const wakeLockActive = ref(false)
-let wakeLockSentinel = null
-async function acquireWakeLock() {
-  try {
-    wakeLockSentinel = await navigator.wakeLock.request('screen')
-    wakeLockActive.value = true
-    wakeLockSentinel.addEventListener('release', () => { wakeLockActive.value = false; wakeLockSentinel = null })
-  } catch { wakeLockActive.value = false }
-}
+const wakeLockActive = computed(() => wakeLockEnabled.value)
 async function toggleWakeLock() {
-  wakeLockEnabled.value = !wakeLockEnabled.value
-  if (wakeLockEnabled.value) { await acquireWakeLock() }
-  else { if (wakeLockSentinel) { await wakeLockSentinel.release(); wakeLockSentinel = null }; wakeLockActive.value = false }
-}
-async function onVisibilityChange() {
-  if (document.visibilityState === 'visible' && wakeLockEnabled.value && !wakeLockSentinel) { await acquireWakeLock() }
+  if (!wakeLockEnabled.value) {
+    try { await noSleep.enable(); wakeLockEnabled.value = true } catch {}
+  } else {
+    noSleep.disable(); wakeLockEnabled.value = false
+  }
 }
 
 const TABS = [
@@ -277,7 +270,6 @@ onMounted(async () => {
   } catch {}
 
   document.addEventListener('fullscreenchange', onFullscreenChange)
-  document.addEventListener('visibilitychange', onVisibilityChange)
 
   getLocalAddress().then(r => { localUrl.value = r.url }).catch(() => {})
 
@@ -290,8 +282,7 @@ onUnmounted(() => {
   if (timer) clearTimeout(timer)
   if (countdown) clearInterval(countdown)
   document.removeEventListener('fullscreenchange', onFullscreenChange)
-  document.removeEventListener('visibilitychange', onVisibilityChange)
-  if (wakeLockSentinel) wakeLockSentinel.release()
+  noSleep.disable()
 })
 
 async function copyAddress() {
