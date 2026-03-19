@@ -4,10 +4,15 @@
 FarmDashHelpers = {}
 
 -- ----------------------------------------------------------------
--- JSON encoder
+-- JSON encoder (depth-limited to avoid FS25 circular references)
 -- ----------------------------------------------------------------
 
-local function encodeVal(val)
+local MAX_DEPTH = 20
+
+local function encodeVal(val, depth)
+    depth = depth or 0
+    if depth >= MAX_DEPTH then return "null" end
+
     local t = type(val)
 
     if val == nil then
@@ -55,14 +60,14 @@ local function encodeVal(val)
         local parts = {}
         if isArray then
             for i = 1, count do
-                parts[i] = encodeVal(val[i])
+                parts[i] = encodeVal(val[i], depth + 1)
             end
             return "[" .. table.concat(parts, ",") .. "]"
         else
             for k, v in pairs(val) do
                 local ks = tostring(k)
                 ks = ks:gsub('\\', '\\\\'):gsub('"', '\\"')
-                table.insert(parts, '"' .. ks .. '":' .. encodeVal(v))
+                table.insert(parts, '"' .. ks .. '":' .. encodeVal(v, depth + 1))
             end
             return "{" .. table.concat(parts, ",") .. "}"
         end
@@ -88,4 +93,17 @@ function FarmDashHelpers.writeJson(filename, data)
     end
     Logging.warning("[FarmDash] Cannot write file: " .. tostring(path))
     return false
+end
+
+-- Delete modSettings/<filename>; fallback: write {"active":false}
+function FarmDashHelpers.deleteJson(filename)
+    local path = getUserProfileAppPath() .. "modSettings/" .. filename
+    local ok = pcall(fileDelete, path)
+    if not ok then
+        local f = createFile(path, FileAccess.WRITE)
+        if f and f ~= 0 then
+            fileWrite(f, '{"active":false}')
+            delete(f)
+        end
+    end
 end

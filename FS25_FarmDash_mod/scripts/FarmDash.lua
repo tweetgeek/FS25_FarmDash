@@ -5,7 +5,7 @@
 --   farmdash_static.json – updated on game start and every 5 minutes (map info, fill types)
 --
 -- Uses addTimer() for non-blocking periodic execution.
--- Requires Helpers.lua to be loaded first (see modDesc.xml).
+-- Requires Helpers.lua to be loaded first (see modDesc.xml order).
 
 FarmDash = {}
 
@@ -118,6 +118,18 @@ function FarmDash:exportStatic()
 end
 
 -- ----------------------------------------------------------------
+-- Cleanup on mission end
+-- ----------------------------------------------------------------
+
+function FarmDash:deleteMap()
+    --FarmDashHelpers.deleteJson(LIVE_FILE)
+    --FarmDashHelpers.deleteJson(STATIC_FILE)
+    Logging.info("[FarmDash] Cleaned up mod data files.")
+end
+
+addModEventListener(FarmDash)
+
+-- ----------------------------------------------------------------
 -- Data collectors
 -- ----------------------------------------------------------------
 
@@ -168,7 +180,7 @@ function FarmDash:getWeatherData()
         }
     end
 
-    -- Hourly forecast (next 12 hours, every other slot = 12 entries of ~2h)
+    -- Hourly forecast (next 12 hours)
     local hourly = {}
     for i = 0, 11 do
         local h = forecast:getHourlyForecast(i)
@@ -222,71 +234,70 @@ function FarmDash:getVehiclesData()
     for _, vehicle in pairs(vs.vehicles) do
         if not vehicle.isDeleted then
             local name = vehicle:getName()
-            if name == nil or name == "" then goto continue end
 
-            local entry = {
-                name           = name,
-                typeName       = vehicle.typeName or "unknown",
-                operatingHours = 0,
-                damage         = 0,
-                dirt           = 0,
-                fuelPct        = nil,
-                x              = nil,
-                z              = nil,
-                rotation       = nil,
-            }
+            if name ~= nil and name ~= "" then
+                local entry = {
+                    name           = name,
+                    typeName       = vehicle.typeName or "unknown",
+                    operatingHours = 0,
+                    damage         = 0,
+                    dirt           = 0,
+                    fuelPct        = nil,
+                    x              = nil,
+                    z              = nil,
+                    rotation       = nil,
+                }
 
-            -- Operating time (ms → hours, 1 decimal)
-            if vehicle.operatingTime then
-                entry.operatingHours = math.floor(vehicle.operatingTime / 360000) / 10
-            end
-
-            -- Wear (average across all wearable nodes) and dirt
-            if vehicle.spec_wearable then
-                local sw = vehicle.spec_wearable
-                -- Dirt
-                entry.dirt = math.floor((sw.dirtyFactor or 0) * 1000) / 10
-                -- Damage: average wear from all wearable nodes
-                if sw.wearableNodes then
-                    local wearSum, wearCount = 0, 0
-                    for _, node in ipairs(sw.wearableNodes) do
-                        wearSum   = wearSum   + (node.wearAmount or 0)
-                        wearCount = wearCount + 1
-                    end
-                    if wearCount > 0 then
-                        entry.damage = math.floor(wearSum / wearCount * 1000) / 10
-                    end
+                -- Operating time (ms → hours, 1 decimal)
+                if vehicle.operatingTime then
+                    entry.operatingHours = math.floor(vehicle.operatingTime / 360000) / 10
                 end
-            end
 
-            -- Fuel percentage (via motorized spec + fill unit)
-            if vehicle.spec_motorized and vehicle.spec_fillUnit then
-                local fuelIdx = vehicle.spec_motorized.fuelFillUnitIndex
-                if fuelIdx then
-                    local fu = vehicle.spec_fillUnit.fillUnits
-                              and vehicle.spec_fillUnit.fillUnits[fuelIdx]
-                    if fu and fu.capacity and fu.capacity > 0 then
-                        entry.fuelPct = math.floor(fu.fillLevel / fu.capacity * 1000) / 10
+                -- Wear (average across all wearable nodes) and dirt
+                if vehicle.spec_wearable then
+                    local sw = vehicle.spec_wearable
+                    -- Dirt
+                    entry.dirt = math.floor((sw.dirtyFactor or 0) * 1000) / 10
+                    -- Damage: average wear from all wearable nodes
+                    if sw.wearableNodes then
+                        local wearSum, wearCount = 0, 0
+                        for _, node in ipairs(sw.wearableNodes) do
+                            wearSum   = wearSum   + (node.wearAmount or 0)
+                            wearCount = wearCount + 1
+                        end
+                        if wearCount > 0 then
+                            entry.damage = math.floor(wearSum / wearCount * 1000) / 10
+                        end
                     end
                 end
-            end
 
-            -- World position and heading
-            if vehicle.rootNode and vehicle.rootNode ~= 0 then
-                local x, _, z = getWorldTranslation(vehicle.rootNode)
-                if x ~= nil then
-                    local dx, _, dz = localDirectionToWorld(vehicle.rootNode, 0, 0, 1)
-                    entry.x        = math.floor(x * 10) / 10
-                    entry.z        = math.floor(z * 10) / 10
-                    entry.rotation = math.floor(
-                        MathUtil.getYRotationFromDirection(dx, dz) * 1000
-                    ) / 1000
+                -- Fuel percentage (via motorized spec + fill unit)
+                if vehicle.spec_motorized and vehicle.spec_fillUnit then
+                    local fuelIdx = vehicle.spec_motorized.fuelFillUnitIndex
+                    if fuelIdx then
+                        local fu = vehicle.spec_fillUnit.fillUnits
+                                  and vehicle.spec_fillUnit.fillUnits[fuelIdx]
+                        if fu and fu.capacity and fu.capacity > 0 then
+                            entry.fuelPct = math.floor(fu.fillLevel / fu.capacity * 1000) / 10
+                        end
+                    end
                 end
+
+                -- World position and heading
+                if vehicle.rootNode and vehicle.rootNode ~= 0 then
+                    local x, _, z = getWorldTranslation(vehicle.rootNode)
+                    if x ~= nil then
+                        local dx, _, dz = localDirectionToWorld(vehicle.rootNode, 0, 0, 1)
+                        entry.x        = math.floor(x * 10) / 10
+                        entry.z        = math.floor(z * 10) / 10
+                        entry.rotation = math.floor(
+                            MathUtil.getYRotationFromDirection(dx, dz) * 1000
+                        ) / 1000
+                    end
+                end
+
+                table.insert(result, entry)
             end
-
-            table.insert(result, entry)
-
-            ::continue::
         end
     end
 
@@ -299,37 +310,35 @@ function FarmDash:getFieldsData()
     local result = {}
 
     for fieldId, field in pairs(g_fieldManager.fields) do
-        if field.farmland == nil then goto skip end
+        if field.farmland ~= nil then
+            local cx, cz   = field:getCenterOfFieldWorldPosition()
+            local fruitType  = "NONE"
+            local fruitTitle = ""
 
-        local cx, cz   = field:getCenterOfFieldWorldPosition()
-        local fruitType  = "NONE"
-        local fruitTitle = ""
-
-        if cx ~= nil then
-            local ftIdx = FSDensityMapUtil.getFruitTypeIndexAtWorldPos(cx, cz)
-            if ftIdx and ftIdx > 0 then
-                local ft = g_fruitTypeManager:getFruitTypeByIndex(ftIdx)
-                if ft then
-                    fruitType  = ft.name or "UNKNOWN"
-                    fruitTitle = (ft.fillType and ft.fillType.title) or ft.name or ""
+            if cx ~= nil then
+                local ftIdx = FSDensityMapUtil.getFruitTypeIndexAtWorldPos(cx, cz)
+                if ftIdx and ftIdx > 0 then
+                    local ft = g_fruitTypeManager:getFruitTypeByIndex(ftIdx)
+                    if ft then
+                        fruitType  = ft.name or "UNKNOWN"
+                        fruitTitle = (ft.fillType and ft.fillType.title) or ft.name or ""
+                    end
                 end
             end
+
+            table.insert(result, {
+                id         = fieldId,
+                farmId     = field.farmland.farmId or 0,
+                owned      = (field.farmland.farmId == 1),
+                area       = field.farmland.areaInHa
+                             and math.floor(field.farmland.areaInHa * 100) / 100
+                             or 0,
+                fruitType  = fruitType,
+                fruitTitle = fruitTitle,
+                x          = cx and math.floor(cx) or nil,
+                z          = cz and math.floor(cz) or nil,
+            })
         end
-
-        table.insert(result, {
-            id         = fieldId,
-            farmId     = field.farmland.farmId or 0,
-            owned      = (field.farmland.farmId == 1),
-            area       = field.farmland.areaInHa
-                         and math.floor(field.farmland.areaInHa * 100) / 100
-                         or 0,
-            fruitType  = fruitType,
-            fruitTitle = fruitTitle,
-            x          = cx and math.floor(cx) or nil,
-            z          = cz and math.floor(cz) or nil,
-        })
-
-        ::skip::
     end
 
     return result

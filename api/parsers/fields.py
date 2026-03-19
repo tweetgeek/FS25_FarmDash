@@ -2,12 +2,18 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 FRUIT_EMOJI: dict[str, str] = {
-    "WHEAT":        "🌾",
-    "BARLEY":       "🌾",
-    "OAT":          "🌾",
-    "SORGHUM":      "🌾",
+    "WHEAT":         "🌾",
+    "WINTERWHEAT":   "🌾",
+    "BARLEY":        "🌾",
+    "WINTERBARLEY":  "🌾",
+    "OAT":           "🌾",
+    "SORGHUM":       "🌾",
+    "SPELT":         "🌾",
+    "TRITICALE":     "🌾",
     "MAIZE":        "🌽",
-    "CANOLA":       "🟡",
+    "CANOLA":        "🟡",
+    "WINTERRAPE":    "🟡",
+    "WINTERCANOLA":  "🟡",
     "SUNFLOWER":    "🌻",
     "SOYBEAN":      "🫘",
     "POTATO":       "🥔",

@@ -46,14 +46,14 @@
       </div>
 
       <div v-show="activeTab === 'overview'">
-        <OverviewTab :data="overviewData" :loading="overviewLoading" :error="overviewError"
+        <OverviewTab :data="effectiveOverviewData" :loading="overviewLoading" :error="overviewError"
           :weatherData="weatherData" :weatherLoading="weatherLoading" :weatherError="weatherError" />
       </div>
       <div v-show="activeTab === 'fields'">
-        <FieldsTab :data="fieldsData" :loading="fieldsLoading" :error="fieldsError" />
+        <FieldsTab :data="effectiveFieldsData" :loading="fieldsLoading" :error="fieldsError" />
       </div>
       <div v-show="activeTab === 'vehicles'">
-        <VehiclesTab :data="vehiclesData" :loading="vehiclesLoading" :error="vehiclesError" />
+        <VehiclesTab :data="effectiveVehiclesData" :loading="vehiclesLoading" :error="vehiclesError" />
       </div>
       <div v-show="activeTab === 'prices'">
         <PricesTab :data="pricesData" :loading="pricesLoading" :error="pricesError" />
@@ -78,7 +78,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { getConfig, getSummary, getFields, getVehicles, getWeather, getEconomy, getStorage, getLocalAddress, getPrecisionFarming, getAnimals, getProduction } from '../api.js'
+import { getConfig, getSummary, getFields, getVehicles, getWeather, getEconomy, getStorage, getLocalAddress, getPrecisionFarming, getAnimals, getProduction, getModLive } from '../api.js'
 import { useI18n } from '../i18n/index.js'
 import { useTheme } from '../theme.js'
 import { usePersist } from '../useUIState.js'
@@ -157,6 +157,50 @@ const productionData = ref(null)
 const productionLoading = ref(true)
 const productionError = ref(null)
 
+const modLiveData = ref(null)
+
+// Merge mod live data (more real-time) on top of XML-parsed data where applicable
+const effectiveOverviewData = computed(() => {
+  const base = overviewData.value
+  if (!base || !modLiveData.value?.updatedAt) return base
+  const mod = modLiveData.value
+  return {
+    ...base,
+    environment: mod.environment ? { ...base.environment, dayTime: mod.environment.dayTime ?? base.environment?.dayTime, currentDay: mod.environment.currentDay ?? base.environment?.currentDay } : base.environment,
+    farm: mod.farm ? { ...base.farm, money: mod.farm.money ?? base.farm?.money, loan: mod.farm.loan ?? base.farm?.loan } : base.farm,
+  }
+})
+
+const effectiveVehiclesData = computed(() => {
+  const base = vehiclesData.value
+  if (!base || !modLiveData.value?.vehicles?.length) return base
+  const modByName = {}
+  for (const mv of modLiveData.value.vehicles) { if (mv.name) modByName[mv.name] = mv }
+  return {
+    ...base,
+    vehicles: (base.vehicles || []).map(v => {
+      const mv = modByName[v.name]
+      if (!mv) return v
+      return { ...v, damage: mv.damage ?? v.damage, dirt: mv.dirt ?? v.dirt, operatingTime: mv.operatingHours ?? v.operatingTime, fuelPct: mv.fuelPct }
+    }),
+  }
+})
+
+const effectiveFieldsData = computed(() => {
+  const base = fieldsData.value
+  if (!base || !modLiveData.value?.fields?.length) return base
+  const modById = {}
+  for (const mf of modLiveData.value.fields) { modById[mf.id] = mf }
+  return {
+    ...base,
+    fields: (base.fields || []).map(f => {
+      const mf = modById[f.id]
+      if (!mf || mf.fruitType === 'NONE') return f
+      return { ...f, fruitType: mf.fruitType }
+    }),
+  }
+})
+
 const saveTitle = computed(() => {
   const career = overviewData.value?.career
   if (!career) return t('ui.dashboard.loadingTitle')
@@ -174,7 +218,7 @@ onMounted(async () => {
 
   getLocalAddress().then(r => { localUrl.value = r.url }).catch(() => {})
 
-  await Promise.all([loadOverview(), loadFields(), loadVehicles(), loadWeather(), loadPrices(), loadStorage(), loadPrecision(), loadAnimals(), loadProduction()])
+  await Promise.all([loadOverview(), loadFields(), loadVehicles(), loadWeather(), loadPrices(), loadStorage(), loadPrecision(), loadAnimals(), loadProduction(), loadModLive()])
   setRefreshOk()
   scheduleRefresh()
 })
@@ -314,6 +358,10 @@ async function loadProduction() {
   }
 }
 
+async function loadModLive() {
+  try { modLiveData.value = await getModLive() } catch { /* mod not available */ }
+}
+
 function setRefreshOk() {
   lastRefresh.value = new Date().toLocaleTimeString('pl-PL')
   secondsLeft.value = refreshInterval.value
@@ -335,6 +383,7 @@ function scheduleRefresh() {
     refreshStatus.value = 'refreshing'
     await loadTab(activeTab.value)
     if (activeTab.value !== 'overview') { loadOverview(); loadWeather() }
+    loadModLive()
     setRefreshOk()
     scheduleRefresh()
   }, refreshInterval.value * 1000)

@@ -13,7 +13,7 @@
             Hello
         </en>
     </description>
-    <iconFilename>icon.dds</iconFilename>
+    <iconFilename>icon.png</iconFilename>
     <multiplayer supported="true"/>
     <extraSourceFiles>
         <sourceFile filename="scripts/Helpers.lua"/>
