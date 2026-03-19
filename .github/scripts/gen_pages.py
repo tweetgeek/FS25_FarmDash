@@ -26,7 +26,9 @@ if exe_src:
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────
-def parse_changelog(body: str) -> list:
+def parse_changelog(body) -> list:
+    if not body:
+        return []
     items = []
     for line in body.splitlines():
         s = line.strip()
