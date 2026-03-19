@@ -470,7 +470,20 @@ header .subtitle {
   justify-content: space-between;
 }
 
-.refresh-status { color: var(--accent2); }
+.refresh-status { color: var(--accent2); display: flex; align-items: center; gap: 6px; }
+.refresh-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 1px 5px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.refresh-btn:hover:not(:disabled) { color: var(--text); border-color: var(--accent2); }
+.refresh-btn:disabled { opacity: 0.4; cursor: default; }
 
 /* Alerts */
 .alert {
