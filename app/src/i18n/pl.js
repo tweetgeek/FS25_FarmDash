@@ -184,6 +184,7 @@ export default {
       copy: '⎘ Kopiuj',
       copied: '✓ Skopiowano',
       refreshIn: 'Odświeżenie za',
+      refreshNow: 'Odśwież teraz',
       loading: '⏳ Ładowanie danych...',
       refreshing: '🔄 Odświeżanie...',
       loadingTitle: 'Ładowanie...',

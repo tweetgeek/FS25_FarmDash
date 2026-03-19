@@ -225,6 +225,32 @@ function FarmDash:getWeatherData()
     }
 end
 
+local function detectVehicleType(vehicle)
+    -- Spec-based detection is more reliable than vehicle.typeName
+    if vehicle.spec_weight          then return "weight"          end
+    if vehicle.spec_combine         then return "harvester"       end
+    if vehicle.spec_forageHarvester then return "forageharvester" end
+    if vehicle.spec_motorized then
+        if vehicle.spec_sprayer     then return "sprayer"         end
+        if vehicle.spec_sowingMachine then return "sower"         end
+        if vehicle.spec_manureSystem then return "manurespreader" end
+        return "tractor"
+    end
+    -- Towed / mounted implements
+    if vehicle.spec_sprayer         then return "sprayer"         end
+    if vehicle.spec_sowingMachine   then return "sower"           end
+    if vehicle.spec_cultivator      then return "cultivator"      end
+    if vehicle.spec_plow            then return "plow"            end
+    if vehicle.spec_mower           then return "mower"           end
+    if vehicle.spec_tedder          then return "tedder"          end
+    if vehicle.spec_windrower       then return "windrower"       end
+    if vehicle.spec_baler           then return "baler"           end
+    if vehicle.spec_wrapper         then return "wrapper"         end
+    if vehicle.spec_trailer         then return "trailer"         end
+    if vehicle.spec_manureSystem    then return "manurespreader"  end
+    return vehicle.typeName or "implement"
+end
+
 function FarmDash:getVehiclesData()
     local vs = g_currentMission and g_currentMission.vehicleSystem
     if vs == nil then return {} end
@@ -238,7 +264,8 @@ function FarmDash:getVehiclesData()
             if name ~= nil and name ~= "" then
                 local entry = {
                     name           = name,
-                    typeName       = vehicle.typeName or "unknown",
+                    filename       = vehicle.configFileName or "",
+                    typeName       = detectVehicleType(vehicle),
                     operatingHours = 0,
                     damage         = 0,
                     dirt           = 0,
