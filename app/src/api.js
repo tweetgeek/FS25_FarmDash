@@ -79,3 +79,7 @@ export function getAnimals(saveId) {
 export function getProduction(saveId) {
   return apiFetch(`/api/save/${encodeURIComponent(saveId)}/production`)
 }
+
+export function getModLive() {
+  return apiFetch('/api/mod-live')
+}

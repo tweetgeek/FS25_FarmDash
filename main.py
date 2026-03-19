@@ -65,7 +65,25 @@ def _get_local_ip() -> str:
         return "127.0.0.1"
 
 
+def _ensure_single_instance():
+    """Prevent multiple instances on Windows using a named mutex."""
+    if sys.platform != "win32":
+        return None
+    import ctypes
+    mutex = ctypes.windll.kernel32.CreateMutexW(None, True, "Global\\FarmDash_SingleInstance_v1")
+    if ctypes.windll.kernel32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
+        ctypes.windll.user32.MessageBoxW(
+            0,
+            "FarmDash jest już uruchomiony.\nSprawdź pasek systemowy (prawy dolny róg ekranu).",
+            "FarmDash — już działa",
+            0x40,  # MB_ICONINFORMATION
+        )
+        sys.exit(0)
+    return mutex  # keep reference alive for process lifetime
+
+
 if __name__ == "__main__":
+    _mutex = _ensure_single_instance()
     PORT = 9988
     local_url = f"http://{_get_local_ip()}:{PORT}"
 

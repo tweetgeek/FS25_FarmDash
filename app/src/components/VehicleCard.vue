@@ -25,7 +25,15 @@
         <div class="vehicle-stat-val">{{ vehicle.age }}m</div>
       </div>
     </div>
-    <template v-for="u in fuelUnits" :key="u.type">
+    <template v-if="vehicle.fuelPct != null">
+      <div style="font-size:11px; color:var(--text-dim); margin-top:4px">
+        ⛽ {{ t('ui.vehicles.fuel') }}: {{ vehicle.fuelPct }}%
+        <div class="progress-bar">
+          <div class="progress-fill progress-fuel" :style="{ width: vehicle.fuelPct + '%' }"></div>
+        </div>
+      </div>
+    </template>
+    <template v-else v-for="u in fuelUnits" :key="u.type">
       <div style="font-size:11px; color:var(--text-dim); margin-top:4px">
         ⛽ {{ tItem(u.type) }}: {{ Math.round(u.level) }}L
         <div class="progress-bar">
