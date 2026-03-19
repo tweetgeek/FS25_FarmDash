@@ -1,16 +1,62 @@
+import logging
+import logging.handlers
 import sys
 import threading
 import time
+import traceback as tb
 import webbrowser
 from pathlib import Path
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from api.routes import router
 from api import VERSION
 from api.config import read_config, write_config
+
+
+# ── Logging setup ─────────────────────────────────────────────────────────────
+
+def _log_dir() -> Path:
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).parent
+    return Path(__file__).parent
+
+
+def _setup_logging() -> Path:
+    log_path = _log_dir() / "farmdash.log"
+    fmt = logging.Formatter(
+        "%(asctime)s  %(levelname)-8s  %(name)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+    fh = logging.handlers.RotatingFileHandler(
+        log_path, maxBytes=2_000_000, backupCount=2, encoding="utf-8"
+    )
+    fh.setFormatter(fmt)
+
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+    root.addHandler(fh)
+
+    # In dev mode also log to stdout
+    if not getattr(sys, "frozen", False):
+        sh = logging.StreamHandler(sys.stdout)
+        sh.setFormatter(fmt)
+        root.addHandler(sh)
+
+    # Let uvicorn logs flow through root (we manage log_config=None below)
+    for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
+        lg = logging.getLogger(name)
+        lg.handlers = []
+        lg.propagate = True
+
+    logging.getLogger("farmdash").info("FarmDash v%s start. Log: %s", VERSION, log_path)
+    return log_path
+
+
+LOG_PATH = _setup_logging()
+logger = logging.getLogger("farmdash")
 
 
 def _static_base() -> Path:
@@ -25,6 +71,21 @@ STATIC_BASE = _static_base()
 app = FastAPI(title="FS25 Farming Dashboard")
 
 app.include_router(router, prefix="/api")
+
+
+@app.middleware("http")
+async def _log_errors(request: Request, call_next):
+    try:
+        response = await call_next(request)
+        if response.status_code >= 500:
+            logger.error("HTTP 500  %s  %s", request.method, request.url.path)
+        return response
+    except Exception:
+        logger.error("EXCEPTION  %s  %s\n%s", request.method, request.url.path, tb.format_exc())
+        return JSONResponse(
+            {"detail": f"Błąd serwera — szczegóły w farmdash.log"},
+            status_code=500,
+        )
 
 _assets_dir = STATIC_BASE / "api" / "static" / "assets"
 if _assets_dir.exists():
@@ -87,10 +148,8 @@ if __name__ == "__main__":
     PORT = 9988
     local_url = f"http://{_get_local_ip()}:{PORT}"
 
-    log_config = None if getattr(sys, "frozen", False) else uvicorn.config.LOGGING_CONFIG
-
     def _make_server():
-        cfg = uvicorn.Config(app, host="0.0.0.0", port=PORT, reload=False, log_config=log_config)
+        cfg = uvicorn.Config(app, host="0.0.0.0", port=PORT, reload=False, log_config=None)
         return uvicorn.Server(cfg)
 
     server_holder = [_make_server()]
@@ -120,6 +179,11 @@ if __name__ == "__main__":
         cfg["open_browser_on_start"] = not cfg.get("open_browser_on_start", False)
         write_config(cfg)
 
+    def on_open_log(icon, item):
+        import os
+        if LOG_PATH.exists():
+            os.startfile(str(LOG_PATH))
+
     def on_quit(icon, item):
         server_holder[0].should_exit = True
         icon.stop()
@@ -136,6 +200,7 @@ if __name__ == "__main__":
             pystray.MenuItem("Open browser on start", on_toggle_browser,
                              checked=lambda item: read_config().get("open_browser_on_start", False)),
             pystray.MenuItem("Restart server", on_restart),
+            pystray.MenuItem("Open log file", on_open_log),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("Quit", on_quit),
         ),
