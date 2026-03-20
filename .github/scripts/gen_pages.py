@@ -74,8 +74,8 @@ if raw_file.exists():
     for r in json.loads(raw_file.read_text(encoding="utf-8")):
         tag  = r.get("tag_name", "")
         ver  = tag.lstrip("v")
-        body = r.get("body", "")
-        cl   = parse_changelog(body) or ([body.strip()] if body.strip() else [])
+        body = r.get("body") or ""
+        cl   = parse_changelog(body) or ([body.strip()] if body else [])
         releases.append({
             "version":    ver,
             "tag":        tag,
