@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FarmDash — FS25 Live Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #0d1117;
+      --surface: #161b22;
+      --border:  #30363d;
+      --text:    #e6edf3;
+      --dim:     #8b949e;
+      --accent:  #3fb950;
+      --accent2: #58a6ff;
+      --latest-glow: rgba(63,185,80,.12);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 15px; line-height: 1.6;
+    }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 20px;
+      text-align: center;
+    }
+    header h1 { font-size: 2rem; font-weight: 700; margin-bottom: 6px; }
+    header p  { color: var(--dim); font-size: .95rem; }
+
+    .container { max-width: 760px; margin: 0 auto; padding: 32px 20px; }
+
+    .section-title {
+      font-size: .75rem; font-weight: 600; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--dim);
+      margin: 32px 0 14px;
+      padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Release cards ── */
+    .release-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin-bottom: 12px;
+    }
+    .latest-card {
+      border-color: var(--accent);
+      background: linear-gradient(135deg, var(--surface) 0%, var(--latest-glow) 100%);
+      margin-bottom: 24px;
+    }
+    .rel-header {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+      margin-bottom: 12px;
+    }
+    .rel-ver {
+      font-size: 1.15rem; font-weight: 700; font-family: monospace;
+      color: var(--accent);
+    }
+    .latest-card .rel-ver { font-size: 1.5rem; }
+    .rel-date  { font-size: .8rem; color: var(--dim); margin-left: auto; }
+
+    .badge-latest, .badge-pre {
+      font-size: .7rem; font-weight: 600; padding: 2px 8px;
+      border-radius: 20px; letter-spacing: .04em;
+    }
+    .badge-latest { background: var(--accent); color: #000; }
+    .badge-pre    { background: #6e40c9; color: #fff; }
+
+    .dl-btn {
+      display: inline-block; padding: 8px 20px; border-radius: 6px;
+      background: var(--accent); color: #000; font-weight: 600; font-size: .9rem;
+      text-decoration: none; white-space: nowrap;
+      transition: opacity .15s;
+    }
+    .dl-btn:hover { opacity: .85; }
+    .dl-btn-sm {
+      padding: 4px 12px; font-size: .8rem; margin-left: auto;
+      background: var(--surface); color: var(--accent2);
+      border: 1px solid var(--border);
+    }
+    .dl-btn-sm:hover { border-color: var(--accent2); }
+
+    .changelog-block h3 {
+      font-size: .85rem; font-weight: 600; color: var(--dim);
+      margin-bottom: 8px; text-transform: uppercase; letter-spacing: .05em;
+    }
+    .changelog-block ul, details ul {
+      padding-left: 18px; display: flex; flex-direction: column; gap: 4px;
+    }
+    .changelog-block li, details li { color: var(--text); font-size: .9rem; }
+    .no-changes { color: var(--dim); font-size: .85rem; }
+
+    details { cursor: pointer; }
+    details summary {
+      font-size: .85rem; color: var(--dim); list-style: none;
+      display: flex; align-items: center; gap: 6px;
+    }
+    details summary::before { content: "▶"; font-size: .65rem; }
+    details[open] summary::before { content: "▼"; }
+    details[open] ul { margin-top: 10px; }
+
+    .platform { font-size: .8rem; color: var(--dim); margin-top: 4px; }
+
+    footer {
+      text-align: center; padding: 32px 20px;
+      color: var(--dim); font-size: .8rem;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--accent2); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 500px) {
+      .rel-header { flex-direction: column; align-items: flex-start; }
+      .rel-date { margin-left: 0; }
+      .dl-btn-sm { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🚜 FarmDash</h1>
+    <p>Farming Simulator 25 &mdash; Panel monitorowania w czasie rzeczywistym</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <p class="section-title">Najnowsza wersja</p>
+
+  
+    <div class="release-card latest-card">
+      <div class="rel-header">
+        <span class="rel-ver">v0.0.12</span>
+        <span class="badge-latest">najnowsza</span><span class="rel-date">2026-03-20</span>
+        <a href="https://tweetgeek.github.io/FS25_FarmDash/FarmDash-0.0.12.exe" class="dl-btn" download>⬇ Pobierz FarmDash v0.0.12</a>
+      </div>
+      <div class="changelog-block"><h3>Co nowego:</h3><p class="no-changes">Brak informacji o zmianach.</p></div>
+    </div>
+
+  <p class="platform" style="margin-top:-16px; margin-bottom:24px; font-size:.8rem; color:var(--dim);">
+    Windows 64-bit &nbsp;·&nbsp; wymaga systemu Windows 10/11
+  </p>
+
+  <p class="section-title">12 wydaniń</p>
+
+  
+    <div class="release-card">
+      <div class="rel-header">
+        <span class="rel-ver">v0.0.11</span>
+        <span class="rel-date">2026-03-19</span>
+        <a href="https://tweetgeek.github.io/FS25_FarmDash/FarmDash-0.0.11.exe" class="dl-btn dl-btn-sm" download>⬇ .exe</a>
+      </div>
+      <details><summary>Co nowego w v0.0.11?</summary></details>
+    </div>
+    <div class="release-card">
+      <div class="rel-header">
+        <span class="rel-ver">v0.0.10</span>
+        <span class="rel-date">2026-03-19</span>
+        <a href="https://tweetgeek.github.io/FS25_FarmDash/FarmDash-0.0.10.exe" class="dl-btn dl-btn-sm" download>⬇ .exe</a>
+      </div>
+      <details><summary>Co nowego w v0.0.10?</summary><ul><li>**Full Changelog**: https://github.com/tweetgeek/FS25_FarmDash/compare/v0.0.8...v0.0.10</li></ul></details>
+    </div>
+    <div class="release-card">
+      <div class="rel-header">
+        <span class="rel-ver">v0.0.9</span>
+        <span class="rel-date">2026-03-19</span>
+        <a href="https://tweetgeek.github.io/FS25_FarmDash/FarmDash-0.0.9.exe" class="dl-btn dl-btn-sm" download>⬇ .exe</a>
+      </div>
+      <details><summary>Co nowego w v0.0.9?</summary></details>
+    </div>
+    <div class="release-card">
+      <div class="rel-header">
+        <span class="rel-ver">v0.0.8</span>
+        <span class="rel-date">2026-03-19</span>
+        <a href="https://tweetgeek.github.io/FS25_FarmDash/FarmDash-0.0.8.exe" class="dl-btn dl-btn-sm" download>⬇ .exe</a>
+      </div>
+      <details><summary>Co nowego w v0.0.8?</summary></details>
+    </div>
+    <div class="release-card">
+      <div class="rel-header">
+        <span class="rel-ver">v0.0.7</span>
+        <span class="rel-date">2026-03-19</span>
+        <a href="https://tweetgeek.github.io/FS25_FarmDash/FarmDash-0.0.7.exe" class="dl-btn dl-btn-sm" download>⬇ .exe</a>
+      </div>
+      <details><summary>Co nowego w v0.0.7?</summary></details>
+    </div>
+    <div class="release-card">
+      <div class="rel-header">
+        <span class="rel-ver">v0.0.6</span>
+        <span class="rel-date">2026-03-18</span>
+        <a href="https://tweetgeek.github.io/FS25_FarmDash/FarmDash-0.0.6.exe" class="dl-btn dl-btn-sm" download>⬇ .exe</a>
+      </div>
+      <details><summary>Co nowego w v0.0.6?</summary></details>
+    </div>
+    <div class="release-card">
+      <div class="rel-header">
+        <span class="rel-ver">v0.0.5</span>
+        <span class="rel-date">2026-03-18</span>
+        <a href="https://tweetgeek.github.io/FS25_FarmDash/FarmDash-0.0.5.exe" class="dl-btn dl-btn-sm" download>⬇ .exe</a>
+      </div>
+      <details><summary>Co nowego w v0.0.5?</summary></details>
+    </div>
+    <div class="release-card">
+      <div class="rel-header">
+        <span class="rel-ver">v0.0.4</span>
+        <span class="rel-date">2026-03-18</span>
+        <a href="https://tweetgeek.github.io/FS25_FarmDash/FarmDash-0.0.4.exe" class="dl-btn dl-btn-sm" download>⬇ .exe</a>
+      </div>
+      <details><summary>Co nowego w 0.0.4?</summary><ul><li>**Full Changelog**: https://github.com/tweetgeek/FS25_FarmDash/compare/0.0.3...0.0.4</li></ul></details>
+    </div>
+    <div class="release-card">
+      <div class="rel-header">
+        <span class="rel-ver">v0.0.3</span>
+        <span class="rel-date">2026-03-18</span>
+        <a href="https://tweetgeek.github.io/FS25_FarmDash/FarmDash-0.0.3.exe" class="dl-btn dl-btn-sm" download>⬇ .exe</a>
+      </div>
+      <details><summary>Co nowego w 0.0.3?</summary></details>
+    </div>
+    <div class="release-card">
+      <div class="rel-header">
+        <span class="rel-ver">v0.0.2</span>
+        <span class="rel-date">2026-03-18</span>
+        <a href="https://tweetgeek.github.io/FS25_FarmDash/FarmDash-0.0.2.exe" class="dl-btn dl-btn-sm" download>⬇ .exe</a>
+      </div>
+      <details><summary>Co nowego w 0.0.2?</summary></details>
+    </div>
+    <div class="release-card">
+      <div class="rel-header">
+        <span class="rel-ver">v0.0.1</span>
+        <span class="rel-date">2026-03-18</span>
+        <a href="https://tweetgeek.github.io/FS25_FarmDash/FarmDash-0.0.1.exe" class="dl-btn dl-btn-sm" download>⬇ .exe</a>
+      </div>
+      <details><summary>Co nowego w 0.0.1?</summary></details>
+    </div>
+
+</div>
+
+<footer>
+  Wygenerowano automatycznie przez GitHub Actions &nbsp;·&nbsp;
+  <a href="https://github.com/tweetgeek/FS25_FarmDash/releases" target="_blank">Wszystkie wydania na GitHub →</a>
+</footer>
+
+</body>
+</html>
